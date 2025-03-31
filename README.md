@@ -5,6 +5,11 @@ BulkyMerge - fast BulkInsert, BulkUpdate, BulkInsertOrUpdate, BulkCopy and BulkD
 
 Depends on [Dapper](https://www.nuget.org/packages/Dapper) [FastMember](https://www.nuget.org/packages/FastMember)
 
+Benchmarks :
+https://dotnetfiddle.net/rKyO3Z
+
+![image](https://github.com/user-attachments/assets/663da398-6eeb-469f-9b54-d0dd2c96d7b5)
+
 Simple usage :
 
 ```csharp
