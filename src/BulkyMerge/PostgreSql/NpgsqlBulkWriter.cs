@@ -15,7 +15,7 @@ namespace BulkyMerge.PostgreSql.PostgreSql;
 internal sealed class NpgsqlBulkWriter : IBulkWriter
 {
 
-    private ConcurrentDictionary<Type, Type> EnumCache = new();
+    private ConcurrentDictionary<Type, Type> TypesCache = new();
 
     private object PrepareValue(object value, ColumnInfo column)
     {
@@ -33,15 +33,19 @@ internal sealed class NpgsqlBulkWriter : IBulkWriter
                     return value;
                 }
             }
-            if (EnumCache.TryGetValue(value.GetType(), out var enumType))
+            if (TypesCache.TryGetValue(value.GetType(), out var type))
             {
-                return Convert.ToInt32(value);
+                if (type.IsEnum)
+                {
+                    return Convert.ToInt32(value);
+                }
             }
             else
             {
                 var valueType = value.GetType();
                 var underlyingType = Nullable.GetUnderlyingType(valueType) ?? valueType;
 
+                TypesCache[valueType] = underlyingType;
                 if (underlyingType?.IsEnum == true)
                 {
                     return Convert.ToInt32(value);
