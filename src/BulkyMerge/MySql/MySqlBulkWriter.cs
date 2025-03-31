@@ -27,8 +27,8 @@ internal sealed class MySqlBulkWriter : IBulkWriter
     {
         if (context.Connection is not MySqlConnection mySqlConnection) return;
         await SetLoadInFileAsync(mySqlConnection);
-        var ordered = context.ColumnsToProperty.OrderBy(x => x.Key).ToArray();
-        var objectReader = context.Items.ToObjectDapperReader(_dialect, ordered.Select(x => x.Value.Name).ToArray());
+        var ordered = context.ColumnsToProperty.ToArray();
+        var objectReader = new DataReader<T>(context.Items, context.TypeAccessor, context.ColumnsToProperty.Values.Select(x => x.Name).ToArray());
         var bulkCopy = new MySqlBulkCopy(mySqlConnection, context.Transaction as MySqlTransaction);
         var ordinal = 0;
         foreach (var columnMapping in ordered)

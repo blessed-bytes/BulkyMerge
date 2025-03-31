@@ -10,6 +10,8 @@ using System.Threading.Tasks;
 using FastMember;
 using System;
 using System.Diagnostics;
+using System.Reflection.Metadata;
+using System.Collections.Concurrent;
 
 namespace BulkyMerge.Root;
 
@@ -29,6 +31,7 @@ public class MergeOptions
 
 internal static partial class BulkExtensions
 {
+    private readonly static ConcurrentDictionary<string, List<ColumnInfo>> ColumnsCache = new();
     private static async Task<MergeContext<T>> BuildContextAsync<T>(ISqlDialect sqlDialect,
             DbConnection connection,
             IEnumerable<T> items,
@@ -36,25 +39,35 @@ internal static partial class BulkExtensions
             MergeOptions options)
     {
         var type = typeof(T);
-        var typeAccessor = TypeAccessor.Create(type);
+        var propertyAccessor = PropertyAccessor<T>.Create();
         var tableAttribute = type.GetCustomAttribute<TableAttribute>(true);
         var tableName = options.TableName ?? tableAttribute?.Name ?? type.Name;
-        var memberSet = typeAccessor.GetMembers().Where(x => x.GetAttribute(typeof(NotMappedAttribute), true) is null).ToList();
-        var primaryKeys = options.PrimaryKeys ?? memberSet.Where(x => x.GetAttribute(typeof(KeyAttribute), true) is not null).Select(x =>
-            x.GetAttribute(typeof(ColumnAttribute), true) is ColumnAttribute column ? column?.Name : x.Name).ToList();
-        var columns = sqlDialect != null ? await FindColumnsAsync(sqlDialect, connection, transaction, tableName) : null;
+        var primaryKeys = options.PrimaryKeys ?? propertyAccessor.Properties.Where(x => x.GetCustomAttribute<KeyAttribute>(true) is not null).Select(x =>
+            x.GetCustomAttribute<ColumnAttribute>(true)?.Name ?? x.Name).ToList();
+
+        List<ColumnInfo> columns = null;
+        if (sqlDialect != null)
+        {
+            var key = $"{connection.Database}.{tableName}";
+            if (!ColumnsCache.TryGetValue(key, out var cache))
+            {
+                cache = await FindColumnsAsync(sqlDialect, connection, transaction, tableName);
+                ColumnsCache[key] = cache;
+            }
+            columns = cache;
+        }
         if (!primaryKeys.Any())
         {
             primaryKeys = columns?.Where(x => x.IsPrimaryKey).Select(x => x.Name);
         }
 
-        var columnsToProperties = memberSet.ToDictionary(x =>
-            x.GetAttribute(typeof(ColumnAttribute), true) is ColumnAttribute column ? column?.Name : x.Name);
+        var columnsToProperties = propertyAccessor.Properties.Where(x => x.GetCustomAttribute<NotMappedAttribute>(true) is null).ToDictionary(x =>
+            x.GetCustomAttribute<ColumnAttribute>(true)?.Name ?? x.Name);
         var tempTableName = sqlDialect?.GetTempTableName(tableName);
         return new MergeContext<T>(connection,
             transaction,
             items,
-            typeAccessor,
+            propertyAccessor,
             tableName,
             options.Schema ?? tableAttribute?.Schema ?? sqlDialect.DefaultScheme,
             tempTableName,
@@ -154,7 +167,7 @@ internal static partial class BulkExtensions
          MergeContext<T> context,
          bool excludePrimaryKeys = false)
      {
-         await CreateTemporaryTableAsync(dialect, context.Connection, context.Transaction, context.Identity, context.TableName, context.TempTableName, context.ColumnsToProperty.Select(x => x.Key));
+         await CreateTemporaryTableAsync(dialect, context.Connection, context.Transaction, context.Identity, context.TableName, context.TempTableName, context.ColumnsToProperty.Keys);
         await bulkWriter.WriteAsync(context.TempTableName, context);
     }
     internal static Task BulkInsertAsync<T>(IBulkWriter bulkWriter, ISqlDialect dialect, 
@@ -251,17 +264,17 @@ internal static partial class BulkExtensions
         if (context.Identity is null) return;
         var identityTypeCacheItem = context.ColumnsToProperty.Where(x =>
             x.Key.Equals(context.Identity.Name, StringComparison.InvariantCultureIgnoreCase)).Select(x => x.Value).First();
-        var identityType = identityTypeCacheItem.Type;
+        var identityType = identityTypeCacheItem.PropertyType;
         var defaultIdentityValue = !identityType.IsGenericType ? Activator.CreateInstance(identityType) : null;
         var identityName = identityTypeCacheItem.Name;
         foreach (var item in context.Items)
         {
-            var value = context.TypeAccessor[item, identityName];
+            var value = context.TypeAccessor.GetValue(item, identityName);
             if (!object.Equals(defaultIdentityValue, value))
                 continue;
             if (await reader.ReadAsync())
             {
-                context.TypeAccessor[item, identityName] = System.Convert.ChangeType(reader[0], identityType);
+                context.TypeAccessor.SetValue(item, identityName, System.Convert.ChangeType(reader[0], identityType));
             }
         }
     }

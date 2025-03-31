@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using BulkyMerge.Root;
 using FastMember;
@@ -63,26 +64,28 @@ internal sealed class NpgsqlBulkWriter : IBulkWriter
     public async Task WriteAsync<T>(string destination, MergeContext<T> context)
     {
         var columnTypes = context.Columns;
-        var columnsMapping = new List<KeyValuePair<string, Member>>(context.ColumnsToProperty);
+        var columnsMapping = context.ColumnsToProperty;
         var columns = columnsMapping.Select(x => x.Key);
         var columnsString = string.Join(",", columns.Select(x => $"\"{x}\""));
-        var accessor = TypeAccessor.Create(typeof(T));
+
         await using var writer = await (context.Connection as NpgsqlConnection)?.BeginBinaryImportAsync($"COPY \"{destination}\" ({columnsString}) FROM STDIN (FORMAT BINARY)");
         writer.Timeout = TimeSpan.FromDays(1);
-        var row = new object[columnsMapping.Count];
-        foreach (var item in context.Items)
+
+        foreach (var item in context.Items.Cast<T>())
         {
-            var vals = new List<(object Value, NpgsqlDbType? Type)>();
             await writer.StartRowAsync();
+
             foreach (var columnMapping in columnsMapping)
             {
-                var commonConverter = TypeConverters.GetConverter(columnMapping.Value.Type);
-                var value = accessor[item, columnMapping.Value.Name];
+                var commonConverter = TypeConverters.GetConverter(columnMapping.Value.PropertyType);
+                var value = context.TypeAccessor.GetValue(item, columnMapping.Value.Name);
                 columnTypes.TryGetValue(columnMapping.Key.ToLower(), out var column);
+
                 if (commonConverter != null)
                 {
                     value = commonConverter.Convert(value);
                 }
+
                 if (column != null)
                 {
                     if (value is null)
@@ -95,9 +98,6 @@ internal sealed class NpgsqlBulkWriter : IBulkWriter
                     }
                 }
             }
-            var log = string.Join(", ", vals.Select(x => $"({x.Value}, {x.Type})"));
-            ;
-
         }
 
         await writer.CompleteAsync();
