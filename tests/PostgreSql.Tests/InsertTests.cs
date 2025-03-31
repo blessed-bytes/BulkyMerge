@@ -1,7 +1,6 @@
 using BulkyMerge.PostgreSql;
 using BulkyMerge.Root;
 using Dapper;
-using FastMember;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Newtonsoft.Json;
 using Npgsql;
