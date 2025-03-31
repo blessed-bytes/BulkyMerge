@@ -42,7 +42,8 @@ public static partial class NpgsqlBulkExtensions
          int bulkCopyTimeout = int.MaxValue,
          string[] excludeProperties = default,
          IEnumerable<string> primaryKeys = default,
-         int timeout = int.MaxValue)
+         int timeout = int.MaxValue,
+         bool mapOutputIdentity = true)
      => BulkExtensions.BulkInsert(BulkWriter, 
          Dialect, 
          connection, 
@@ -52,7 +53,8 @@ public static partial class NpgsqlBulkExtensions
          batchSize,
          excludeProperties, 
          primaryKeys, 
-         timeout);
+         timeout,
+         mapOutputIdentity);
      
      public static  void BulkUpdate<T>(this NpgsqlConnection connection,
          IList<T> items,

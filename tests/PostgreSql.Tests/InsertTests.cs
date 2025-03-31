@@ -69,6 +69,7 @@ namespace BulkyMerge.PostgreSql.Tests
 
          }*/
 
+
         [Theory]
         [InlineData(true)]
         [InlineData(false)]

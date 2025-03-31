@@ -14,40 +14,14 @@ namespace BulkyMerge.PostgreSql.PostgreSql;
 
 internal sealed class NpgsqlBulkWriter : IBulkWriter
 {
-    private static readonly ConcurrentDictionary<Type, object> enumCache = new();
 
-    private async Task<Dictionary<string, string>> GetColumns(DbConnection connection, string tableName)
-    {
-        var columns = new Dictionary<string, string>();
-        try
-        {
-            var query = @"SELECT column_name, data_type 
-                        FROM information_schema.columns 
-                        WHERE table_name = @tableName";
+    private ConcurrentDictionary<Type, Type> EnumCache = new();
 
-            using var cmd = new NpgsqlCommand(query, connection as NpgsqlConnection);
-            cmd.Parameters.AddWithValue("tableName", tableName);
-
-            using (var reader = await cmd.ExecuteReaderAsync())
-            {
-                while (await reader.ReadAsync())
-                {
-                    columns[reader.GetString(0).ToLower()] = reader.GetString(1);
-                }
-            }
-        }
-        catch (Exception e)
-        {
-            ;
-        }
-        return columns;
-    }
-        
-    private object PrepareValue(object value, string type)
+    private object PrepareValue(object value, ColumnInfo column)
     {
         if (value != null)
         {
-            if (type == "timestamp without time zone"
+            if (column.DataType == "timestamp without time zone"
                 && (value.GetType() == typeof(DateTime) || value.GetType() == typeof(DateTime?)))
             {
                 try
@@ -59,13 +33,21 @@ internal sealed class NpgsqlBulkWriter : IBulkWriter
                     return value;
                 }
             }
-            var valueType = value.GetType();
-            var underlyingType = Nullable.GetUnderlyingType(valueType) ?? valueType;
-
-            if (underlyingType?.IsEnum == true)
+            if (EnumCache.TryGetValue(value.GetType(), out var enumType))
             {
                 return Convert.ToInt32(value);
             }
+            else
+            {
+                var valueType = value.GetType();
+                var underlyingType = Nullable.GetUnderlyingType(valueType) ?? valueType;
+
+                if (underlyingType?.IsEnum == true)
+                {
+                    return Convert.ToInt32(value);
+                }
+            }
+            
         }
         return value;
     }
@@ -76,7 +58,7 @@ internal sealed class NpgsqlBulkWriter : IBulkWriter
 
     public async Task WriteAsync<T>(string destination, MergeContext<T> context)
     {
-        var columnTypes = await GetColumns(context.Connection, context.TableName);
+        var columnTypes = context.Columns;
         var columnsMapping = new List<KeyValuePair<string, Member>>(context.ColumnsToProperty);
         var columns = columnsMapping.Select(x => x.Key);
         var columnsString = string.Join(",", columns.Select(x => $"\"{x}\""));
@@ -92,12 +74,12 @@ internal sealed class NpgsqlBulkWriter : IBulkWriter
             {
                 var commonConverter = TypeConverters.GetConverter(columnMapping.Value.Type);
                 var value = accessor[item, columnMapping.Value.Name];
-                var type = columnTypes.TryGetValue(columnMapping.Key.ToLower(), out var columnType) ? columnType : null;
+                columnTypes.TryGetValue(columnMapping.Key.ToLower(), out var column);
                 if (commonConverter != null)
                 {
                     value = commonConverter.Convert(value);
                 }
-                if (type != null)
+                if (column != null)
                 {
                     if (value is null)
                     {
@@ -105,7 +87,7 @@ internal sealed class NpgsqlBulkWriter : IBulkWriter
                     }
                     else
                     {
-                        await writer.WriteAsync(PrepareValue(value, type), type);
+                        await writer.WriteAsync(PrepareValue(value, column), column.DataType);
                     }
                 }
             }

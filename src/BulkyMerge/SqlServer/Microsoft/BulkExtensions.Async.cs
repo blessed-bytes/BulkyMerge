@@ -23,7 +23,8 @@ public static partial class SqlServerBulkExtensions
         int batchSize = BulkExtensions.DefaultBatchSize,
         IEnumerable<string> excludeProperties = default,
         IEnumerable<string> primaryKeys = default,
-        int timeout = int.MaxValue)
+        int timeout = int.MaxValue,
+        bool mapOutputIdentity = true)
         => BulkExtensions.BulkInsertOrUpdateAsync(BulkWriter, 
             Dialect, 
             connection, 
@@ -33,7 +34,8 @@ public static partial class SqlServerBulkExtensions
             batchSize, 
             excludeProperties, 
             primaryKeys, 
-            timeout);
+            timeout,
+            mapOutputIdentity);
      
      public static Task BulkInsertAsync<T>(this SqlConnection connection,
          IList<T> items,
@@ -42,7 +44,8 @@ public static partial class SqlServerBulkExtensions
          int batchSize =  BulkExtensions.DefaultBatchSize,
          string[] excludeProperties = default,
          IEnumerable<string> primaryKeys = default,
-         int timeout = int.MaxValue)
+         int timeout = int.MaxValue,
+         bool mapOutputIdentity = true)
      => BulkExtensions.BulkInsertAsync(BulkWriter, 
          Dialect, 
          connection, 
@@ -52,7 +55,8 @@ public static partial class SqlServerBulkExtensions
          batchSize, 
          excludeProperties, 
          primaryKeys, 
-         timeout);
+         timeout,
+         mapOutputIdentity);
      
      public static Task BulkUpdateAsync<T>(this SqlConnection connection,
          IList<T> items,

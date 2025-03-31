@@ -22,7 +22,8 @@ public static partial class MySqlBulkExtensions
             int batchSize = BulkExtensions.DefaultBatchSize,
             IEnumerable<string> excludeProperties = default,
             IEnumerable<string> primaryKeys = default,
-            int timeout = int.MaxValue)
+            int timeout = int.MaxValue,
+            bool mapOutputIdentity = true)
      => BulkExtensions.BulkInsertOrUpdate(BulkWriter, 
          Dialect, 
          connection, 
@@ -32,7 +33,8 @@ public static partial class MySqlBulkExtensions
          batchSize,
          excludeProperties, 
          primaryKeys, 
-         timeout);
+         timeout,
+         mapOutputIdentity);
 
      public static void BulkInsert<T>(this MySqlConnection connection,
          IList<T> items,
@@ -41,7 +43,8 @@ public static partial class MySqlBulkExtensions
          int batchSize = BulkExtensions.DefaultBatchSize,
          string[] excludeProperties = default,
          IEnumerable<string> primaryKeys = default,
-         int timeout = int.MaxValue)
+         int timeout = int.MaxValue,
+         bool mapOutputIdentity = true)
      => BulkExtensions.BulkInsert(BulkWriter, 
          Dialect, 
          connection, 
@@ -51,7 +54,8 @@ public static partial class MySqlBulkExtensions
          batchSize,
          excludeProperties, 
          primaryKeys, 
-         timeout);
+         timeout,
+         mapOutputIdentity);
      
      public static  void BulkUpdate<T>(this MySqlConnection connection,
          IList<T> items,

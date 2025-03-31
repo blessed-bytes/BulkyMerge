@@ -12,29 +12,41 @@ using System;
 
 namespace BulkyMerge.Root;
 
+public record ColumnInfo(string Name, string DataType, bool IsIdentity, bool IsPrimaryKey);
+
+public class MergeOptions
+{
+    public string Schema { get; set; }
+    public string TableName { get; set; }
+    public int BatchSize { get; set; }
+    public IEnumerable<string> ExcludeProperties { get; set; }
+    public IEnumerable<string> PrimaryKeys { get; set; }
+    public int Timeout { get; set; } = int.MaxValue;
+    public string IdentityColumnName { get; set; }
+    public bool MapOutputIdentity { get; set; }
+}
+
 internal static partial class BulkExtensions
 {
     private static async Task<MergeContext<T>> BuildContextAsync<T>(ISqlDialect sqlDialect,
             DbConnection connection,
             IEnumerable<T> items,
-            string tableName,
             DbTransaction transaction,
-            int batchSize,
-            IEnumerable<string> excludeProperties,
-            IEnumerable<string> primaryKeys,
-            int timeout)
+            MergeOptions options)
     {
         var type = typeof(T);
         var typeAccessor = TypeAccessor.Create(type);
         var tableAttribute = type.GetCustomAttribute<TableAttribute>(true);
+        var tableName = options.TableName ?? tableAttribute?.Name ?? type.Name;
         var memberSet = typeAccessor.GetMembers().Where(x => x.GetAttribute(typeof(NotMappedAttribute), true) is null).ToList();
-        primaryKeys ??= memberSet.Where(x => x.GetAttribute(typeof(KeyAttribute), true) is not null).Select(x =>
+        var primaryKeys = options.PrimaryKeys ?? memberSet.Where(x => x.GetAttribute(typeof(KeyAttribute), true) is not null).Select(x =>
             x.GetAttribute(typeof(ColumnAttribute), true) is ColumnAttribute column ? column?.Name : x.Name).ToList();
-        if (!primaryKeys.Any() && sqlDialect != null)
+        var columns = sqlDialect != null ? await FindColumnsAsync(sqlDialect, connection, transaction, tableName) : null;
+        if (!primaryKeys.Any())
         {
-            primaryKeys = await FindPrimaryKeysInfoAsync(sqlDialect, connection, transaction, tableName);
+            primaryKeys = columns?.Where(x => x.IsPrimaryKey).Select(x => x.Name);
         }
-        var identity = sqlDialect != null ? await FindIdentityInfoAsync(sqlDialect, connection, transaction, tableName) : null;
+
         var columnsToProperties = memberSet.ToDictionary(x =>
             x.GetAttribute(typeof(ColumnAttribute), true) is ColumnAttribute column ? column?.Name : x.Name);
         var tempTableName = sqlDialect?.GetTempTableName(tableName);
@@ -42,14 +54,15 @@ internal static partial class BulkExtensions
             transaction,
             items,
             typeAccessor,
-            tableName ?? tableAttribute?.Name ?? type.Name,
-            tableAttribute?.Schema ?? sqlDialect.DefaultScheme,
+            tableName,
+            options.Schema ?? tableAttribute?.Schema ?? sqlDialect.DefaultScheme,
             tempTableName,
-            columnsToProperties.Where(x => excludeProperties?.Any(c => c == x.Key) != true).ToDictionary(),
-            identity,
+            columnsToProperties.Where(x => options.ExcludeProperties?.Any(c => c == x.Key) != true).ToDictionary(),
+            columns?.ToDictionary(x => x.Name?.ToLower()),
+            columns?.FirstOrDefault(x => x.IsIdentity),
             primaryKeys.ToList(),
-            batchSize,
-            timeout);
+            options.BatchSize,
+            options.Timeout);
     }
 
     internal static async Task BulkCopyAsync<T>(IBulkWriter bulkWriter, DbConnection connection,
@@ -62,7 +75,14 @@ internal static partial class BulkExtensions
     {
         var shouldCloseConnection =  await OpenConnectionAsync(connection);
 
-        var context = await BuildContextAsync(null, connection, items, tableName, transaction, batchSize, null, null, timeout);
+        var context = await BuildContextAsync(null, connection, items, transaction,
+            new MergeOptions
+            {
+                TableName = tableName,
+                BatchSize = batchSize,
+                Timeout = timeout,
+                MapOutputIdentity = false
+            } );
         await bulkWriter.WriteAsync(context.TableName, context);
         if (shouldCloseConnection) await connection.CloseAsync();
     }
@@ -74,14 +94,17 @@ internal static partial class BulkExtensions
             int batchSize = DefaultBatchSize,
             IEnumerable<string> excludeProperties = default,
             IEnumerable<string> primaryKeys = default,
-            int timeout = int.MaxValue)
+            int timeout = int.MaxValue,
+            bool mapIdentity = true)
     => ExecuteInternalAsync(
             (dialect, context) => dialect.GetInsertOrUpdateMergeStatement(context.ColumnsToProperty.Keys, context.TableName, context.TempTableName, context.PrimaryKeys, context.Identity),
-            bulkWriter, dialect, connection, items, tableName, transaction, batchSize, excludeProperties, primaryKeys, timeout, true);
+            bulkWriter, dialect, connection, items, tableName, transaction, batchSize, excludeProperties, primaryKeys, timeout,  mapIdentity);
 
     internal static async Task ExecuteInternalAsync<T>(
             Func<ISqlDialect, MergeContext<T>, string> dialectCall,
-            IBulkWriter bulkWriter, ISqlDialect dialect, DbConnection connection,
+            IBulkWriter bulkWriter, 
+            ISqlDialect dialect, 
+            DbConnection connection,
             IEnumerable<T> items,
             string tableName = default,
             DbTransaction transaction = default,
@@ -89,11 +112,20 @@ internal static partial class BulkExtensions
             IEnumerable<string> excludeProperties = default,
             IEnumerable<string> primaryKeys = default,
             int timeout = int.MaxValue,
-            bool mapIdentity = false)
+            bool mapIdentity = true)
     {
         var shouldCloseConnection = await OpenConnectionAsync(connection);
 
-        var context = await BuildContextAsync(dialect, connection, items, tableName, transaction, batchSize, excludeProperties, primaryKeys, timeout);
+        var context = await BuildContextAsync(dialect, connection, items, transaction,
+            new MergeOptions
+            {
+                TableName = tableName,
+                ExcludeProperties = excludeProperties,
+                PrimaryKeys = primaryKeys,
+                Timeout = timeout,
+                MapOutputIdentity = mapIdentity
+            });
+
         await WriteToTempAsync(bulkWriter,
             dialect,
             context);
@@ -130,10 +162,11 @@ internal static partial class BulkExtensions
          int batchSize = DefaultBatchSize,
          string[] excludeProperties = default,
          IEnumerable<string> primaryKeys = default,
-         int timeout = int.MaxValue)
+         int timeout = int.MaxValue,
+         bool mapIdentity = true)
      => ExecuteInternalAsync(
             (dialect, context) => dialect.GetInsertQuery(context.ColumnsToProperty.Keys, context.TableName, context.TempTableName, context.PrimaryKeys, context.Identity),
-            bulkWriter, dialect, connection, items, tableName, transaction, batchSize, excludeProperties, primaryKeys, timeout, true);
+            bulkWriter, dialect, connection, items, tableName, transaction, batchSize, excludeProperties, primaryKeys, timeout,  mapIdentity);
 
     internal static Task BulkUpdateAsync<T>(IBulkWriter bulkWriter, ISqlDialect dialect, DbConnection connection,
          IEnumerable<T> items,
@@ -145,7 +178,7 @@ internal static partial class BulkExtensions
          int timeout = int.MaxValue)
      => ExecuteInternalAsync(
             (dialect, context) => dialect.GetUpdateQuery(context.ColumnsToProperty.Keys, context.TableName, context.TempTableName, context.PrimaryKeys, context.Identity),
-            bulkWriter, dialect, connection, items, tableName, transaction, batchSize, excludeProperties, primaryKeys, timeout);
+            bulkWriter, dialect, connection, items, tableName, transaction, batchSize, excludeProperties, primaryKeys, timeout, false);
 
     internal static Task BulkDeleteAsync<T>(IBulkWriter bulkWriter, 
          ISqlDialect dialect, 
@@ -158,11 +191,11 @@ internal static partial class BulkExtensions
          int timeout = int.MaxValue)
      => ExecuteInternalAsync(
             (dialect, context) => dialect.GetDeleteQuery(context.TableName, context.TempTableName, context.PrimaryKeys, context.Identity),
-            bulkWriter, dialect, connection, items, tableName, transaction, batchSize, null, primaryKeys, timeout);
+            bulkWriter, dialect, connection, items, tableName, transaction, batchSize, null, primaryKeys, timeout, false);
 
     private static Task CreateTemporaryTableAsync(ISqlDialect dialect, DbConnection connection, 
         DbTransaction transaction, 
-        Identity identity, 
+        ColumnInfo identity, 
         string tableName, 
         string tempTableName, 
         IEnumerable<string> columnNames = default)
@@ -176,21 +209,14 @@ internal static partial class BulkExtensions
         return ExecuteAsync(connection, queryString.ToString(), transaction);
     }
 
-    private static async Task<Identity> FindIdentityInfoAsync(ISqlDialect dialect, DbConnection connection, DbTransaction transaction, string tableName)
+    private static async Task<List<ColumnInfo>> FindColumnsAsync(ISqlDialect dialect, DbConnection connection, DbTransaction transaction, string tableName)
     {
-        await using var reader = await ExecuteReaderAsync(connection, dialect.GetFindIdentityQuery(connection.Database, tableName), transaction);
-        return await reader.ReadAsync() ? new Identity(reader[0].ToString(), reader[1].ToString()) : null;
-    }
-    
-    private static async Task<IEnumerable<string>> FindPrimaryKeysInfoAsync(ISqlDialect dialect, DbConnection connection, DbTransaction transaction, string tableName)
-    {
-        var result = new List<string>();
-        await using var reader = await ExecuteReaderAsync(connection, dialect.GetFindPrimaryKeysQuery(connection.Database, tableName), transaction);
+        var result = new List<ColumnInfo>();
+        await using var reader = await ExecuteReaderAsync(connection, dialect.GetColumnsQuery(connection.Database, tableName), transaction);
         while (await reader.ReadAsync())
         {
-            result.Add(reader[0].ToString());
+            result.Add(new ColumnInfo(reader.GetString(0), reader.GetString(1), reader.GetInt32(2) == 1, reader.GetInt32(3) == 1));
         }
-
         return result;
     }
     
@@ -221,7 +247,7 @@ internal static partial class BulkExtensions
     {
         if (context.Identity is null) return;
         var identityTypeCacheItem = context.ColumnsToProperty.Where(x =>
-            x.Key.Equals(context.Identity.ColumnName, StringComparison.InvariantCultureIgnoreCase)).Select(x => x.Value).First();
+            x.Key.Equals(context.Identity.Name, StringComparison.InvariantCultureIgnoreCase)).Select(x => x.Value).First();
         var identityType = identityTypeCacheItem.Type;
         var defaultIdentityValue = !identityType.IsGenericType ? Activator.CreateInstance(identityType) : null;
         var identityName = identityTypeCacheItem.Name;
@@ -232,7 +258,7 @@ internal static partial class BulkExtensions
                 continue;
             if (await reader.ReadAsync())
             {
-                context.TypeAccessor[item, identityName] = Convert(reader[0]);
+                context.TypeAccessor[item, identityName] = System.Convert.ChangeType(reader[0], identityType);
             }
         }
     }

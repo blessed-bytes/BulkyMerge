@@ -23,7 +23,8 @@ public static partial class NpgsqlBulkExtensions
         int batchSize = BulkExtensions.DefaultBatchSize,
         IEnumerable<string> excludeProperties = default,
         IEnumerable<string> primaryKeys = default,
-        int timeout = int.MaxValue)
+        int timeout = int.MaxValue,
+        bool mapIdentity = true)
         => BulkExtensions.BulkInsertOrUpdateAsync(BulkWriter, 
             Dialect, 
             connection, 
@@ -33,7 +34,8 @@ public static partial class NpgsqlBulkExtensions
             batchSize, 
             excludeProperties, 
             primaryKeys, 
-            timeout);
+            timeout,
+            mapIdentity);
      
      public static Task BulkInsertAsync<T>(this NpgsqlConnection connection,
          IList<T> items,
@@ -42,7 +44,8 @@ public static partial class NpgsqlBulkExtensions
          int batchSize =  BulkExtensions.DefaultBatchSize,
          string[] excludeProperties = default,
          IEnumerable<string> primaryKeys = default,
-         int timeout = int.MaxValue)
+         int timeout = int.MaxValue,
+         bool mapIdentity = true)
      => BulkExtensions.BulkInsertAsync(BulkWriter, 
          Dialect, 
          connection, 
@@ -52,7 +55,8 @@ public static partial class NpgsqlBulkExtensions
          batchSize, 
          excludeProperties, 
          primaryKeys, 
-         timeout);
+         timeout,
+         mapIdentity);
      
      public static Task BulkUpdateAsync<T>(this NpgsqlConnection connection,
          IEnumerable<T> items,

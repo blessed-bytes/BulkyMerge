@@ -158,7 +158,7 @@ public class PgSqlTestsBase
             {GetDropTableQuery(name)}
             CREATE TABLE ""{name}""
             (
-                ""Id"" bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+                ""Id"" SERIAL PRIMARY KEY,
                 ""IntValue"" integer NULL,
                 ""BigIntValue"" bigint NULL,
                 ""DecimalValue"" decimal(10, 4) NULL,

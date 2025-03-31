@@ -1,9 +1,3 @@
-using System;
-using System.Data;
-using System.Data.Common;
-using System.Linq;
-using System.Threading.Tasks;
-
 namespace BulkyMerge.Root;
 
 internal static partial class BulkExtensions

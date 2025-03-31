@@ -22,6 +22,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BulkyMerge.MySql.Tests", "t
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BulkyMerge.Sample", "samples\BulkyMerge.Sample\BulkyMerge.Sample.csproj", "{61ED2569-1ED8-4446-860A-C52F8E1129C9}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarks", "benchmarks", "{063FC93B-4EE2-4BCE-9DDF-A127844EFE64}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

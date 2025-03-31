@@ -13,7 +13,8 @@ internal record MergeContext<T>(
         string Schema,
         string TempTableName,
         Dictionary<string, Member> ColumnsToProperty,
-        Identity Identity,
+        Dictionary<string, ColumnInfo> Columns,
+        ColumnInfo Identity,
         List<string> PrimaryKeys,
         int BatchSize,
         int Timeout);

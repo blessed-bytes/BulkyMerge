@@ -1,9 +1,6 @@
-using System.Collections.Generic;
-using System.Data.Common;
 using System.Linq;
 using System.Threading.Tasks;
 using BulkyMerge.Root;
-using FastMember;
 using MySqlConnector;
 
 namespace BulkyMerge.MySql;
