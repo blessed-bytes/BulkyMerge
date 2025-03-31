@@ -3,7 +3,7 @@ BulkyMerge - fast BulkInsert, BulkUpdate, BulkInsertOrUpdate, BulkCopy and BulkD
 
 [![Build status](https://ci.appveyor.com/api/projects/status/iylj7wjrak5866i6?svg=true)](https://ci.appveyor.com/project/filipppka/dapper-fastbulkoperations)
 
-Benchmarks :
+Benchmark :
 https://dotnetfiddle.net/rKyO3Z
 
 ![image](https://github.com/user-attachments/assets/663da398-6eeb-469f-9b54-d0dd2c96d7b5)
