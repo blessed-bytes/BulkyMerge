@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading;
 using BulkyMerge.Root;
 using Microsoft.Data.SqlClient;
 
@@ -15,15 +16,16 @@ public static partial class SqlServerBulkExtensions
         int batchSize = BulkExtensions.DefaultBatchSize)
     => BulkExtensions.BulkCopy(BulkWriter, connection, transaction, items, tableName, excludeColumns, timeout, batchSize);
 
-     public static  void BulkInsertOrUpdate<T>(this SqlConnection connection,
-            IList<T> items,
-            string tableName = default,
-            SqlTransaction transaction = default,
-            int batchSize = BulkExtensions.DefaultBatchSize,
-            int bulkCopyTimeout = int.MaxValue,
-            IEnumerable<string> excludeProperties = default,
-            IEnumerable<string> primaryKeys = default,
-            int timeout = int.MaxValue)
+    public static void BulkInsertOrUpdate<T>(this SqlConnection connection,
+           IList<T> items,
+           string tableName = default,
+           SqlTransaction transaction = default,
+           int batchSize = BulkExtensions.DefaultBatchSize,
+           int bulkCopyTimeout = int.MaxValue,
+           IEnumerable<string> excludeProperties = default,
+           IEnumerable<string> primaryKeys = default,
+           int timeout = int.MaxValue,
+           bool mapOutputIdentity = true)
      => BulkExtensions.BulkInsertOrUpdate(BulkWriter, 
          Dialect, 
          connection, 
@@ -33,7 +35,8 @@ public static partial class SqlServerBulkExtensions
          batchSize,
          excludeProperties, 
          primaryKeys, 
-         timeout);
+         timeout,
+         mapOutputIdentity);
 
      public static void BulkInsert<T>(this SqlConnection connection,
          IList<T> items,
@@ -43,7 +46,8 @@ public static partial class SqlServerBulkExtensions
          int bulkCopyTimeout = int.MaxValue,
          string[] excludeProperties = default,
          IEnumerable<string> primaryKeys = default,
-         int timeout = int.MaxValue)
+         int timeout = int.MaxValue,
+         bool mapOutputIdentity = true)
      => BulkExtensions.BulkInsert(BulkWriter, 
          Dialect, 
          connection, 
@@ -53,7 +57,8 @@ public static partial class SqlServerBulkExtensions
          batchSize,
          excludeProperties, 
          primaryKeys, 
-         timeout);
+         timeout,
+         mapOutputIdentity);
      
      public static  void BulkUpdate<T>(this SqlConnection connection,
          IList<T> items,
