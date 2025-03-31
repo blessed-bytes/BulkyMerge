@@ -6,7 +6,7 @@ BulkyMerge - fast BulkInsert, BulkUpdate, BulkInsertOrUpdate, BulkCopy and BulkD
 Benchmark :
 https://dotnetfiddle.net/rKyO3Z
 
-![image](https://github.com/user-attachments/assets/5655575a-5e17-4863-9c99-e9639b52c636)
+![image](https://github.com/user-attachments/assets/d2f1b9fc-e87c-44a6-b545-f0bf23b5c096)
 
 Simple usage :
 
