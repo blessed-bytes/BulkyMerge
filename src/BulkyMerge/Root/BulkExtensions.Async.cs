@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using FastMember;
 using System;
+using System.Diagnostics;
 
 namespace BulkyMerge.Root;
 
@@ -18,7 +19,7 @@ public class MergeOptions
 {
     public string Schema { get; set; }
     public string TableName { get; set; }
-    public int BatchSize { get; set; }
+    public int BatchSize { get; set; } = BulkExtensions.DefaultBatchSize;
     public IEnumerable<string> ExcludeProperties { get; set; }
     public IEnumerable<string> PrimaryKeys { get; set; }
     public int Timeout { get; set; } = int.MaxValue;
@@ -123,7 +124,8 @@ internal static partial class BulkExtensions
                 ExcludeProperties = excludeProperties,
                 PrimaryKeys = primaryKeys,
                 Timeout = timeout,
-                MapOutputIdentity = mapIdentity
+                MapOutputIdentity = mapIdentity,
+                BatchSize = batchSize
             });
 
         await WriteToTempAsync(bulkWriter,
@@ -143,6 +145,7 @@ internal static partial class BulkExtensions
         {
             await MapIdentityAsync(reader, context);
         }
+
         if (shouldCloseConnection) await connection.CloseAsync();
     }
      
@@ -152,8 +155,8 @@ internal static partial class BulkExtensions
          bool excludePrimaryKeys = false)
      {
          await CreateTemporaryTableAsync(dialect, context.Connection, context.Transaction, context.Identity, context.TableName, context.TempTableName, context.ColumnsToProperty.Select(x => x.Key));
-         await bulkWriter.WriteAsync(context.TempTableName, context);
-     }
+        await bulkWriter.WriteAsync(context.TempTableName, context);
+    }
     internal static Task BulkInsertAsync<T>(IBulkWriter bulkWriter, ISqlDialect dialect, 
          DbConnection connection,
          IEnumerable<T> items,

@@ -105,14 +105,8 @@ DROP TABLE {tempTableName}";
         return $@"SELECT 
     c.name AS column_name,
     t.name AS data_type,
-    CASE 
-         WHEN c.is_identity = 1 THEN 1
-         ELSE 0
-    END AS column_type,
-    CASE 
-         WHEN i.is_primary_key = 1 THEN 1
-         ELSE 0
-    END AS is_primary_key
+     CASE WHEN c.is_identity = 1 THEN 1 ELSE 0 END AS is_identity,
+    COALESCE(i.is_primary_key, 0) AS is_primary_key
 FROM sys.columns c
 JOIN sys.types t ON c.user_type_id = t.user_type_id
 LEFT JOIN sys.index_columns ic 

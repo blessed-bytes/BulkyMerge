@@ -13,13 +13,6 @@ internal sealed class MySqlBulkWriter : IBulkWriter
     {
         _dialect = dialect;
     }
-
-    private void SetLoadInFile(MySqlConnection connection)
-    {
-        using var cmd = connection.CreateCommand();
-        cmd.CommandText = "SET GLOBAL local_infile = true;";
-        cmd.ExecuteNonQuery();
-    }
     
     private async Task SetLoadInFileAsync(MySqlConnection connection)
     {

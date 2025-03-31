@@ -21,7 +21,6 @@ public static partial class SqlServerBulkExtensions
            string tableName = default,
            SqlTransaction transaction = default,
            int batchSize = BulkExtensions.DefaultBatchSize,
-           int bulkCopyTimeout = int.MaxValue,
            IEnumerable<string> excludeProperties = default,
            IEnumerable<string> primaryKeys = default,
            int timeout = int.MaxValue,
