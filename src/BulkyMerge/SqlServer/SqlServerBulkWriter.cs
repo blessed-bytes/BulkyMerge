@@ -22,15 +22,15 @@ internal class SqlServerBulkWriter : IBulkWriter
     {
 
         var objectReader = new DataReader<T>(context.Items, context.TypeAccessor, context.ColumnsToProperty.Values.Select(x => x.Name).ToArray());
-        using var microsoftClientBukCopy = new SqlBulkCopy(context.Connection as SqlConnection, SqlBulkCopyOptions.TableLock, context.Transaction as SqlTransaction);
+        using var microsoftClientBulkCopy = new SqlBulkCopy(context.Connection as SqlConnection, SqlBulkCopyOptions.TableLock, context.Transaction as SqlTransaction);
         foreach (var columnMapping in context.ColumnsToProperty)
         {
-            microsoftClientBukCopy.ColumnMappings.Add(new SqlBulkCopyColumnMapping(columnMapping.Value.Name, columnMapping.Key));
+            microsoftClientBulkCopy.ColumnMappings.Add(new SqlBulkCopyColumnMapping(columnMapping.Value.Name, columnMapping.Key));
         }
-        microsoftClientBukCopy.BatchSize = context.BatchSize;
-        microsoftClientBukCopy.BulkCopyTimeout = context.Timeout;
-        microsoftClientBukCopy.DestinationTableName = destination;
+        microsoftClientBulkCopy.BatchSize = context.BatchSize;
+        microsoftClientBulkCopy.BulkCopyTimeout = context.Timeout;
+        microsoftClientBulkCopy.DestinationTableName = destination;
 
-        await microsoftClientBukCopy.WriteToServerAsync(objectReader);
+        await microsoftClientBulkCopy.WriteToServerAsync(objectReader);
     }
 }

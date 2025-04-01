@@ -43,7 +43,7 @@ internal sealed class NpgsqlBulkWriter : IBulkWriter
             else
             {
                 var valueType = value.GetType();
-                var underlyingType = Nullable.GetUnderlyingType(valueType) ?? valueType;
+                var underlyingType = TypesCache.GetOrAdd(valueType, t => Nullable.GetUnderlyingType(t) ?? t);
 
                 TypesCache[valueType] = underlyingType;
                 if (underlyingType?.IsEnum == true)
