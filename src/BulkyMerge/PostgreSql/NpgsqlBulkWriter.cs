@@ -16,6 +16,7 @@ internal sealed class NpgsqlBulkWriter : IBulkWriter
 {
 
     private ConcurrentDictionary<Type, Type> TypesCache = new();
+    private ConcurrentDictionary<Type, Type> EnumUnderlyingTypes = new();
 
     private object PrepareValue(object value, ColumnInfo column)
     {
@@ -44,11 +45,9 @@ internal sealed class NpgsqlBulkWriter : IBulkWriter
             {
                 var valueType = value.GetType();
                 var underlyingType = TypesCache.GetOrAdd(valueType, t => Nullable.GetUnderlyingType(t) ?? t);
-
-                TypesCache[valueType] = underlyingType;
                 if (underlyingType?.IsEnum == true)
                 {
-                    return Convert.ToInt32(value);
+                    return Convert.ChangeType(value, EnumUnderlyingTypes.GetOrAdd(underlyingType, Enum.GetUnderlyingType));
                 }
             }
             
@@ -68,7 +67,7 @@ internal sealed class NpgsqlBulkWriter : IBulkWriter
         var columnsString = string.Join(",", columns.Select(x => $"\"{x}\""));
 
         await using var writer = await (context.Connection as NpgsqlConnection)?.BeginBinaryImportAsync($"COPY \"{destination}\" ({columnsString}) FROM STDIN (FORMAT BINARY)");
-        writer.Timeout = TimeSpan.FromDays(1);
+        writer.Timeout = TimeSpan.FromMilliseconds(context.Timeout);
 
         foreach (var item in context.Items.Cast<T>())
         {
