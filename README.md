@@ -25,100 +25,19 @@
 *(Works the same for MySQL and SQL Server)*  
 
 ```csharp
-using BulkyMerge.PostgreSql;
-using BulkyMerge.Root;
-using Newtonsoft.Json;
-using Npgsql;
-using Dapper;
-using System.Diagnostics;
-using System.Data;
-
-const string pgsqlConnectionString = "Host=localhost;Port=5432;Database=postgres;Username=postgres;Password=YourPassword;";
-
-await CreateTable();
-
-TypeConverters.RegisterTypeConverter(typeof(JsonObj), JsonConvert.SerializeObject);
-
-var list = Enumerable.Range(0, 10_000).Select(x => CreateOrUpdatePerson(x)).ToList();
-
-var stopWatch = Stopwatch.StartNew();
-await using var insertConnection = new NpgsqlConnection(pgsqlConnectionString);
+...
+await using var insertConnection = new NpgsqlConnection(pgsqlConnectionString); // MysqlConenction or NpgsqlConnection
 await insertConnection.BulkInsertAsync(list);
-Console.WriteLine($"BulkInsertAsync {list.Count} took {stopWatch.Elapsed}");
+
 
 var updated = list.Select(x => CreateOrUpdatePerson(0, x)).ToList();
 
-stopWatch.Restart();
-await using var insertOrUpdateConnection = new NpgsqlConnection(pgsqlConnectionString);
+await using var insertOrUpdateConnection = new NpgsqlConnection(pgsqlConnectionString); // MysqlConenction or NpgsqlConnection
 await insertOrUpdateConnection.BulkInsertOrUpdateAsync(updated);
-Console.WriteLine($"BulkInsertOrUpdateAsync {list.Count} took {stopWatch.Elapsed}");
 
-stopWatch.Restart();
-await using var deleteConnection = new NpgsqlConnection(pgsqlConnectionString);
+await using var deleteConnection = new NpgsqlConnection(pgsqlConnectionString); // MysqlConenction or NpgsqlConnection
 await deleteConnection.BulkDeleteAsync(list);
-Console.WriteLine($"BulkDeleteAsync {list.Count} took {stopWatch.Elapsed}");
-
-Person CreateOrUpdatePerson(int i, Person p = null)
-{
-    var randString = Guid.NewGuid().ToString("N");
-    p ??= new Person();
-    p.FullName = randString;
-    p.JsonObj = new JsonObj { JsonProp = randString };
-    p.EnumValue = i % 2 == 0 ? EnumValues.First : EnumValues.Second;
-    p.CreateDate = DateTime.UtcNow;
-    p.BigTextValue = randString;
-    p.NvarcharValue = randString;
-    p.BigIntValue = i;
-    p.IntValue = i;
-    p.DecimalValue = i;
-    return p;
-}
-
-async Task CreateTable()
-{
-    await using var createNpgSql = new NpgsqlConnection(pgsqlConnectionString);
-    createNpgSql.Execute(@"
-        DROP TABLE IF EXISTS \"Person\";
-        CREATE TABLE \"Person\" (
-            \"IdentityId\" SERIAL PRIMARY KEY,
-            \"IntValue\" INTEGER NULL,
-            \"BigIntValue\" BIGINT NULL,
-            \"DecimalValue\" DECIMAL(10, 4) NULL,
-            \"NvarcharValue\" VARCHAR(255) NULL,
-            \"FullName\" VARCHAR(255) NULL,
-            \"JsonObj\" JSONB NULL,
-            \"EnumValue\" INTEGER NULL,
-            \"BigTextValue\" TEXT NULL,
-            \"CreateDate\" DATE NULL,
-            \"GuidValue\" UUID NULL
-        )");
-}
-
-public class Person
-{
-    public int IdentityId { get; set; }
-    public string FullName { get; set; }
-    public JsonObj JsonObj { get; set; }
-    public string BigTextValue { get; set; }
-    public decimal DecimalValue { get; set; }
-    public EnumValues EnumValue { get; set; }
-    public DateTime CreateDate { get; set; }
-    public long BigIntValue { get; set; }
-    public int IntValue { get; set; }
-    public Guid GuidValue { get; set; }
-    public string NvarcharValue { get; set; }
-}
-
-public enum EnumValues
-{
-    First = 1,
-    Second = 2
-}
-
-public class JsonObj
-{
-    public string JsonProp { get; set; }
-}
+...
 ```
 
 📂 **Check the `samples` folder for more examples!**  
