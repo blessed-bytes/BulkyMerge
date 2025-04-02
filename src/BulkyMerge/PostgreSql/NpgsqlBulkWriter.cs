@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using BulkyMerge.Root;
 using Npgsql;
 
-namespace BulkyMerge.PostgreSql.PostgreSql;
+namespace BulkyMerge.PostgreSql;
 
 internal sealed class NpgsqlBulkWriter : IBulkWriter
 {

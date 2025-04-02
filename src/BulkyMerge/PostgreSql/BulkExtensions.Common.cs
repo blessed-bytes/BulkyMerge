@@ -1,5 +1,3 @@
-using BulkyMerge.PostgreSql.PostgreSql;
-
 namespace BulkyMerge.PostgreSql;
 
 public static partial class NpgsqlBulkExtensions

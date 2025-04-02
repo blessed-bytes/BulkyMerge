@@ -6,7 +6,7 @@ using System.Text;
 using BulkyMerge.Root;
 using Npgsql;
 
-namespace BulkyMerge.PostgreSql.PostgreSql;
+namespace BulkyMerge.PostgreSql;
 
 public sealed class NpgsqlDialect : ISqlDialect
 {
