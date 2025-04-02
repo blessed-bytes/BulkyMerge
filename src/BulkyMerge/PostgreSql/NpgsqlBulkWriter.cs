@@ -69,7 +69,7 @@ internal sealed class NpgsqlBulkWriter : IBulkWriter
         await using var writer = await (context.Connection as NpgsqlConnection)?.BeginBinaryImportAsync($"COPY \"{destination}\" ({columnsString}) FROM STDIN (FORMAT BINARY)");
         writer.Timeout = TimeSpan.FromMilliseconds(context.Timeout);
 
-        foreach (var item in context.Items.Cast<T>())
+        foreach (var item in context.Items)
         {
             await writer.StartRowAsync();
 
