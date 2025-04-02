@@ -1,22 +1,18 @@
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Data;
-using System.Data.Common;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using BulkyMerge.Root;
 using Npgsql;
-using NpgsqlTypes;
 
 namespace BulkyMerge.PostgreSql.PostgreSql;
 
 internal sealed class NpgsqlBulkWriter : IBulkWriter
 {
 
-    private ConcurrentDictionary<Type, Type> TypesCache = new();
-    private ConcurrentDictionary<Type, Type> EnumUnderlyingTypes = new();
+    private readonly ConcurrentDictionary<Type, Type> TypesCache = new();
+    private readonly ConcurrentDictionary<Type, Type> EnumUnderlyingTypes = new();
 
     private object PrepareValue(object value, ColumnInfo column)
     {
