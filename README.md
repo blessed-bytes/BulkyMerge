@@ -8,30 +8,30 @@
 ## ⚡ Performance Timing  
 
 ### For **10,000** items:  
-- **Mysql.BulkInsertAsync**: ⏱ 00:00:00.6386250  
-- **PostgreSQL.BulkInsertAsync**: ⏱ 00:00:00.3918789  
-- **SqlServer.BulkInsertAsync**: ⏱ 00:00:00.4121973  
+- **Mysql.BulkInsertAsync**: ⏱ **638 ms**  
+- **PostgreSQL.BulkInsertAsync**: ⏱ **392 ms**  
+- **SqlServer.BulkInsertAsync**: ⏱ **412 ms**  
 
-- **Mysql.BulkInsertOrUpdateAsync**: ⏱ 00:00:00.4553051  
-- **PostgreSQL.BulkInsertOrUpdateAsync**: ⏱ 00:00:00.4802001  
-- **SqlServer.BulkInsertOrUpdateAsync**: ⏱ 00:00:00.5790086  
+- **Mysql.BulkInsertOrUpdateAsync**: ⏱ **455 ms**  
+- **PostgreSQL.BulkInsertOrUpdateAsync**: ⏱ **480 ms**  
+- **SqlServer.BulkInsertOrUpdateAsync**: ⏱ **579 ms**  
 
-- **Mysql.BulkDeleteAsync**: ⏱ 00:00:00.3198663  
-- **PostgreSQL.BulkDeleteAsync**: ⏱ 00:00:00.2004163  
-- **SqlServer.BulkDeleteAsync**: ⏱ 00:00:00.2130967  
+- **Mysql.BulkDeleteAsync**: ⏱ **320 ms**  
+- **PostgreSQL.BulkDeleteAsync**: ⏱ **200 ms**  
+- **SqlServer.BulkDeleteAsync**: ⏱ **213 ms**  
 
 ### For **100,000** items:  
-- **Mysql.BulkInsertAsync**: ⏱ 00:00:02.7574623  
-- **PostgreSQL.BulkInsertAsync**: ⏱ 00:00:01.8421319  
-- **SqlServer.BulkInsertAsync**: ⏱ 00:00:03.0949602  
+- **Mysql.BulkInsertAsync**: ⏱ **2.76 s**  
+- **PostgreSQL.BulkInsertAsync**: ⏱ **1.84 s**  
+- **SqlServer.BulkInsertAsync**: ⏱ **3.09 s**  
 
-- **Mysql.BulkInsertOrUpdateAsync**: ⏱ 00:00:02.8529519  
-- **PostgreSQL.BulkInsertOrUpdateAsync**: ⏱ 00:00:01.3165880  
-- **SqlServer.BulkInsertOrUpdateAsync**: ⏱ 00:00:03.2408191  
+- **Mysql.BulkInsertOrUpdateAsync**: ⏱ **2.85 s**  
+- **PostgreSQL.BulkInsertOrUpdateAsync**: ⏱ **1.32 s**  
+- **SqlServer.BulkInsertOrUpdateAsync**: ⏱ **3.24 s**  
 
-- **Mysql.BulkDeleteAsync**: ⏱ 00:00:01.9721236  
-- **PostgreSQL.BulkDeleteAsync**: ⏱ 00:00:00.9930003  
-- **SqlServer.BulkDeleteAsync**: ⏱ 00:00:00.8305408  
+- **Mysql.BulkDeleteAsync**: ⏱ **1.97 s**  
+- **PostgreSQL.BulkDeleteAsync**: ⏱ **993 ms**  
+- **SqlServer.BulkDeleteAsync**: ⏱ **831 ms**  
 
 ---  
 
@@ -64,4 +64,3 @@ await deleteConnection.BulkDeleteAsync(list);
 ✅ Supports PostgreSQL, MySQL, and SQL Server  
 ✅ Simple and intuitive API  
 ✅ Reduces database load and speeds up data processing  
-
