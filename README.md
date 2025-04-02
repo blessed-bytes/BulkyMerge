@@ -8,14 +8,30 @@
 ## ⚡ Performance Timing  
 
 ### For **10,000** items:  
-- **BulkInsertAsync**: ⏱ 00:00:00.7225412  
-- **BulkInsertOrUpdateAsync**: ⏱ 00:00:00.3958080  
-- **BulkDeleteAsync**: ⏱ 00:00:00.3807820  
+- **Mysql.BulkInsertAsync**: ⏱ 00:00:00.6386250  
+- **PostgreSQL.BulkInsertAsync**: ⏱ 00:00:00.3918789  
+- **SqlServer.BulkInsertAsync**: ⏱ 00:00:00.4121973  
 
-### For **1,000,000** items:  
-- **BulkInsertAsync**: ⏱ 00:00:11.0477860  
-- **BulkInsertOrUpdateAsync**: ⏱ 00:00:21.3268264  
-- **BulkDeleteAsync**: ⏱ 00:00:08.5113587  
+- **Mysql.BulkInsertOrUpdateAsync**: ⏱ 00:00:00.4553051  
+- **PostgreSQL.BulkInsertOrUpdateAsync**: ⏱ 00:00:00.4802001  
+- **SqlServer.BulkInsertOrUpdateAsync**: ⏱ 00:00:00.5790086  
+
+- **Mysql.BulkDeleteAsync**: ⏱ 00:00:00.3198663  
+- **PostgreSQL.BulkDeleteAsync**: ⏱ 00:00:00.2004163  
+- **SqlServer.BulkDeleteAsync**: ⏱ 00:00:00.2130967  
+
+### For **100,000** items:  
+- **Mysql.BulkInsertAsync**: ⏱ 00:00:02.7574623  
+- **PostgreSQL.BulkInsertAsync**: ⏱ 00:00:01.8421319  
+- **SqlServer.BulkInsertAsync**: ⏱ 00:00:03.0949602  
+
+- **Mysql.BulkInsertOrUpdateAsync**: ⏱ 00:00:02.8529519  
+- **PostgreSQL.BulkInsertOrUpdateAsync**: ⏱ 00:00:01.3165880  
+- **SqlServer.BulkInsertOrUpdateAsync**: ⏱ 00:00:03.2408191  
+
+- **Mysql.BulkDeleteAsync**: ⏱ 00:00:01.9721236  
+- **PostgreSQL.BulkDeleteAsync**: ⏱ 00:00:00.9930003  
+- **SqlServer.BulkDeleteAsync**: ⏱ 00:00:00.8305408  
 
 ---  
 
@@ -48,6 +64,4 @@ await deleteConnection.BulkDeleteAsync(list);
 ✅ Supports PostgreSQL, MySQL, and SQL Server  
 ✅ Simple and intuitive API  
 ✅ Reduces database load and speeds up data processing  
-
----
 
