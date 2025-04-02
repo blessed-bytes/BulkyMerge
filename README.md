@@ -29,7 +29,6 @@
 await using var insertConnection = new NpgsqlConnection(pgsqlConnectionString); // MysqlConenction or NpgsqlConnection
 await insertConnection.BulkInsertAsync(list);
 
-
 var updated = list.Select(x => CreateOrUpdatePerson(0, x)).ToList();
 
 await using var insertOrUpdateConnection = new NpgsqlConnection(pgsqlConnectionString); // MysqlConenction or NpgsqlConnection
