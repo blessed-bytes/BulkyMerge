@@ -6,30 +6,67 @@ using Npgsql;
 using System.Data;
 using Dapper;
 using System.Diagnostics;
+using Microsoft.Data.SqlClient;
+using MySqlConnector;
+using BulkyMerge.MySql;
 const string pgsqlConnectionString = "Host=localhost;Port=5432;Database=postgres;Username=postgres;Password=YourPassword;";
+const string sqlServerConnectionString = "Server=localhost,1433;Database=master;User Id=sa;Password=YourStrong!Passw0rd;TrustServerCertificate=True;";
+const string mysqlConnectionString = "Server=localhost;Database=test;Uid=root;Pwd=YourPassword;Port=3306;AllowLoadLocalInfile=true;Allow User Variables=true";
 
-await CreateTable();
+await CreateMysqlTable();
+await CreateSqlServerTable();
+await CreatePgTable();
 
 TypeConverters.RegisterTypeConverter(typeof(JsonObj), JsonConvert.SerializeObject);
 
-var list = Enumerable.Range(0, 1_000_000).Select(x => CreateOrUpdatePerson(x)).ToList();
+var list = Enumerable.Range(0, 100_000).Select(x => CreateOrUpdatePerson(x)).ToList();
 
 var stopWatch = Stopwatch.StartNew();
-await using var insertConnection = new NpgsqlConnection(pgsqlConnectionString); // MysqlConenction or NpgsqlConnection
-await insertConnection.BulkInsertAsync(list);
-Console.WriteLine($"BulkInsertAsync {list.Count} takes {stopWatch.Elapsed}");
+await using var mysqlInsertConnection = MysqlConnect(); 
+await mysqlInsertConnection.BulkInsertAsync(list);
+Console.WriteLine($"Mysql.BulkInsertAsync {list.Count} takes {stopWatch.Elapsed}");
+
+stopWatch.Restart();
+await using var postgreInsertConnection = PostgreConnect();
+await postgreInsertConnection.BulkInsertAsync(list);
+Console.WriteLine($"PostgreSQL.BulkInsertAsync {list.Count} takes {stopWatch.Elapsed}");
+
+stopWatch.Restart();
+await using var sqlServerInsertConnection = SqlServerConnect();
+await sqlServerInsertConnection.BulkInsertAsync(list);
+Console.WriteLine($"SqlServer.BulkInsertAsync {list.Count} takes {stopWatch.Elapsed}");
 
 var updated = list.Select(x => CreateOrUpdatePerson(0, x)).ToList();
 
 stopWatch.Restart();
-await using var insertOrUpdateConnection = new NpgsqlConnection(pgsqlConnectionString); // MysqlConenction or NpgsqlConnection
-await insertOrUpdateConnection.BulkInsertOrUpdateAsync(updated);
-Console.WriteLine($"BulkInsertOrUpdateAsync {list.Count} takes {stopWatch.Elapsed}");
+await using var mysqlInsertOrUpdateConnection = MysqlConnect(); 
+await mysqlInsertOrUpdateConnection.BulkInsertOrUpdateAsync(updated);
+Console.WriteLine($"Mysql.BulkInsertOrUpdateAsync {list.Count} takes {stopWatch.Elapsed}");
 
 stopWatch.Restart();
-await using var deleteConnection = new NpgsqlConnection(pgsqlConnectionString); // MysqlConenction or NpgsqlConnection
-await deleteConnection.BulkDeleteAsync(list);
-Console.WriteLine($"BulkDeleteAsync {list.Count} takes {stopWatch.Elapsed}");
+await using var postgreInsertOrUpdateConnection = PostgreConnect(); 
+await postgreInsertOrUpdateConnection.BulkInsertOrUpdateAsync(updated);
+Console.WriteLine($"PostgreSQL.BulkInsertOrUpdateAsync {list.Count} takes {stopWatch.Elapsed}");
+
+stopWatch.Restart();
+await using var sqlServerInsertOrUpdateConnection = SqlServerConnect(); 
+await sqlServerInsertOrUpdateConnection.BulkInsertOrUpdateAsync(updated);
+Console.WriteLine($"SqlServer.BulkInsertOrUpdateAsync {list.Count} takes {stopWatch.Elapsed}");
+
+stopWatch.Restart();
+await using var mysqlDeleteConnection = MysqlConnect(); 
+await mysqlDeleteConnection.BulkDeleteAsync(list);
+Console.WriteLine($"Mysql.BulkDeleteAsync {list.Count} takes {stopWatch.Elapsed}");
+
+stopWatch.Restart();
+await using var postgreDeleteConnection = MysqlConnect(); 
+await postgreDeleteConnection.BulkDeleteAsync(list);
+Console.WriteLine($"PostgreSQL.BulkDeleteAsync {list.Count} takes {stopWatch.Elapsed}");
+
+stopWatch.Restart();
+await using var sqlServerDeleteConnection = MysqlConnect(); 
+await sqlServerDeleteConnection.BulkDeleteAsync(list);
+Console.WriteLine($"SqlServer.BulkDeleteAsync {list.Count} takes {stopWatch.Elapsed}");
 
 ;
 Person CreateOrUpdatePerson(int i, Person p = null)
@@ -48,9 +85,63 @@ Person CreateOrUpdatePerson(int i, Person p = null)
     return p;
 }
 
+SqlConnection SqlServerConnect() => new SqlConnection(sqlServerConnectionString);
+
+NpgsqlConnection PostgreConnect() => new NpgsqlConnection(pgsqlConnectionString);
+MySqlConnection MysqlConnect() => new MySqlConnection(mysqlConnectionString);
+
+async Task CreateSqlServerTable()
+{
+    await using var conn = SqlServerConnect();
+    {
+        conn.Execute($@"
+            DROP TABLE IF EXISTS Person;
+CREATE TABLE Person
+(
+    IdentityId INT IDENTITY(1,1) PRIMARY KEY,
+    IntValue INT NULL,
+    BigIntValue BIGINT NULL,
+    DecimalValue DECIMAL(10,4) NULL,
+    NvarcharValue NVARCHAR(255) NULL,
+    FullName NVARCHAR(255) NULL,
+    JsonObj NVARCHAR(MAX) NULL,  -- SQL Server не поддерживает JSONB, но можно хранить в NVARCHAR(MAX)
+    EnumValue INT NULL,
+    BigTextValue NVARCHAR(MAX) NULL,
+    CreateDate DATE NULL,
+    GuidValue UNIQUEIDENTIFIER NULL
+);");
+
+    }
+
+}
+
+async Task CreateMysqlTable()
+{
+    await using var createNpgSql = MysqlConnect();
+{
+    createNpgSql.Execute($@"
+            DROP TABLE IF EXISTS Person;
+CREATE TABLE Person
+(
+    IdentityId INT AUTO_INCREMENT PRIMARY KEY,
+    IntValue INT NULL,
+    BigIntValue BIGINT NULL,
+    DecimalValue DECIMAL(10,4) NULL,
+    NvarcharValue VARCHAR(255) NULL,
+    FullName VARCHAR(255) NULL,
+    JsonObj JSON NULL,  -- В MySQL можно использовать JSON
+    EnumValue INT NULL,
+    BigTextValue TEXT NULL,
+    CreateDate DATE NULL,
+    GuidValue CHAR(36) NULL  -- В MySQL нет UUID, но можно хранить как строку
+);");
+
+}
+
+}
 
 
-async Task CreateTable()
+async Task CreatePgTable()
 {
     await using var createNpgSql = new NpgsqlConnection(pgsqlConnectionString);
     {
