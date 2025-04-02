@@ -1,40 +1,38 @@
-BulkyMerge - fast BulkInsert, BulkUpdate, BulkInsertOrUpdate, BulkCopy and BulkDelete extensions
-========================================
+# BulkyMerge - Fast Bulk Operations for .NET  
+🚀 **Fast** BulkInsert, BulkUpdate, BulkInsertOrUpdate, BulkCopy, and BulkDelete extensions  
 
-[![Build status](https://ci.appveyor.com/api/projects/status/iylj7wjrak5866i6?svg=true)](https://ci.appveyor.com/project/filipppka/dapper-fastbulkoperations)
+🔗 **Benchmark**: [dotnetfiddle.net/rKyO3Z](https://dotnetfiddle.net/rKyO3Z)  
 
-Benchmark :
-https://dotnetfiddle.net/rKyO3Z
+![Performance Graph](https://github.com/user-attachments/assets/d2f1b9fc-e87c-44a6-b545-f0bf23b5c096)  
 
-![image](https://github.com/user-attachments/assets/d2f1b9fc-e87c-44a6-b545-f0bf23b5c096)
+## ⚡ Performance Timing  
 
-Timinng:
+### For **10,000** items:  
+- **BulkInsertAsync**: ⏱ 00:00:00.7225412  
+- **BulkInsertOrUpdateAsync**: ⏱ 00:00:00.3958080  
+- **BulkDeleteAsync**: ⏱ 00:00:00.3807820  
 
-For 10_000 items:
+### For **1,000,000** items:  
+- **BulkInsertAsync**: ⏱ 00:00:11.0477860  
+- **BulkInsertOrUpdateAsync**: ⏱ 00:00:21.3268264  
+- **BulkDeleteAsync**: ⏱ 00:00:08.5113587  
 
-BulkInsertAsync 10000 takes 00:00:00.7225412
-BulkInsertOrUpdateAsync 10000 takes 00:00:00.3958080
-BulkDeleteAsync 10000 takes 00:00:00.3807820
+---  
 
-For 1_000_000 items:
+## 🚀 Simple Usage  
 
-BulkInsertAsync 1000000 takes 00:00:11.0477860
-BulkInsertOrUpdateAsync 1000000 takes 00:00:21.3268264
-BulkDeleteAsync 1000000 takes 00:00:08.5113587
-
-Simple usage :
-
-Sample for PostgreSQL, same will work for MySql and SqlServer
+### Sample for **PostgreSQL**  
+*(Works the same for MySQL and SQL Server)*  
 
 ```csharp
 using BulkyMerge.PostgreSql;
 using BulkyMerge.Root;
-using BulkyMerge.SqlServer;
 using Newtonsoft.Json;
 using Npgsql;
-using System.Data;
 using Dapper;
 using System.Diagnostics;
+using System.Data;
+
 const string pgsqlConnectionString = "Host=localhost;Port=5432;Database=postgres;Username=postgres;Password=YourPassword;";
 
 await CreateTable();
@@ -44,29 +42,28 @@ TypeConverters.RegisterTypeConverter(typeof(JsonObj), JsonConvert.SerializeObjec
 var list = Enumerable.Range(0, 10_000).Select(x => CreateOrUpdatePerson(x)).ToList();
 
 var stopWatch = Stopwatch.StartNew();
-await using var insertConnection = new NpgsqlConnection(pgsqlConnectionString); // MysqlConenction or NpgsqlConnection
+await using var insertConnection = new NpgsqlConnection(pgsqlConnectionString);
 await insertConnection.BulkInsertAsync(list);
-Console.WriteLine($"BulkInsertAsync {list.Count} takes {stopWatch.Elapsed}");
+Console.WriteLine($"BulkInsertAsync {list.Count} took {stopWatch.Elapsed}");
 
 var updated = list.Select(x => CreateOrUpdatePerson(0, x)).ToList();
 
 stopWatch.Restart();
-await using var insertOrUpdateConnection = new NpgsqlConnection(pgsqlConnectionString); // MysqlConenction or NpgsqlConnection
+await using var insertOrUpdateConnection = new NpgsqlConnection(pgsqlConnectionString);
 await insertOrUpdateConnection.BulkInsertOrUpdateAsync(updated);
-Console.WriteLine($"BulkInsertOrUpdateAsync {list.Count} takes {stopWatch.Elapsed}");
+Console.WriteLine($"BulkInsertOrUpdateAsync {list.Count} took {stopWatch.Elapsed}");
 
 stopWatch.Restart();
-await using var deleteConnection = new NpgsqlConnection(pgsqlConnectionString); // MysqlConenction or NpgsqlConnection
+await using var deleteConnection = new NpgsqlConnection(pgsqlConnectionString);
 await deleteConnection.BulkDeleteAsync(list);
-Console.WriteLine($"BulkDeleteAsync {list.Count} takes {stopWatch.Elapsed}");
+Console.WriteLine($"BulkDeleteAsync {list.Count} took {stopWatch.Elapsed}");
 
-;
 Person CreateOrUpdatePerson(int i, Person p = null)
 {
     var randString = Guid.NewGuid().ToString("N");
     p ??= new Person();
     p.FullName = randString;
-    p.JsonObj = new JsonObj {  JsonProp = randString };
+    p.JsonObj = new JsonObj { JsonProp = randString };
     p.EnumValue = i % 2 == 0 ? EnumValues.First : EnumValues.Second;
     p.CreateDate = DateTime.UtcNow;
     p.BigTextValue = randString;
@@ -77,33 +74,25 @@ Person CreateOrUpdatePerson(int i, Person p = null)
     return p;
 }
 
-
-
 async Task CreateTable()
 {
     await using var createNpgSql = new NpgsqlConnection(pgsqlConnectionString);
-    {
-        createNpgSql.Execute($@"
-            DROP TABLE IF EXISTS ""Person"";
-            CREATE TABLE ""Person""
-            (
-                ""IdentityId"" SERIAL PRIMARY KEY,
-                ""IntValue"" integer NULL,
-                ""BigIntValue"" bigint NULL,
-                ""DecimalValue"" decimal(10, 4) NULL,
-                ""NvarcharValue"" varchar(255) NULL,
-                ""FullName"" varchar(255) NULL,
-                ""JsonObj"" JSONB NULL,
-                ""EnumValue"" integer NULL,
-                ""BigTextValue"" TEXT NULL,
-                ""CreateDate"" date NULL,
-                ""GuidValue"" uuid NULL
-            )");
-
-    }
-
+    createNpgSql.Execute(@"
+        DROP TABLE IF EXISTS \"Person\";
+        CREATE TABLE \"Person\" (
+            \"IdentityId\" SERIAL PRIMARY KEY,
+            \"IntValue\" INTEGER NULL,
+            \"BigIntValue\" BIGINT NULL,
+            \"DecimalValue\" DECIMAL(10, 4) NULL,
+            \"NvarcharValue\" VARCHAR(255) NULL,
+            \"FullName\" VARCHAR(255) NULL,
+            \"JsonObj\" JSONB NULL,
+            \"EnumValue\" INTEGER NULL,
+            \"BigTextValue\" TEXT NULL,
+            \"CreateDate\" DATE NULL,
+            \"GuidValue\" UUID NULL
+        )");
 }
-
 
 public class Person
 {
@@ -119,6 +108,7 @@ public class Person
     public Guid GuidValue { get; set; }
     public string NvarcharValue { get; set; }
 }
+
 public enum EnumValues
 {
     First = 1,
@@ -130,9 +120,16 @@ public class JsonObj
     public string JsonProp { get; set; }
 }
 ```
-Please check samples folder
 
+📂 **Check the `samples` folder for more examples!**  
 
+---  
 
+🔥 **Why Use BulkyMerge?**  
+✅ High performance bulk operations  
+✅ Supports PostgreSQL, MySQL, and SQL Server  
+✅ Simple and intuitive API  
+✅ Reduces database load and speeds up data processing  
 
+---
 
