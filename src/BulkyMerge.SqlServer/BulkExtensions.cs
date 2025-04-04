@@ -1,14 +1,11 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using BulkyMerge;
 using Microsoft.Data.SqlClient;
 
 namespace BulkyMerge.SqlServer;
 
-public static partial class SqlServerBulkExtensions
+public static class SqlServerBulkExtensions
 {
-    private static readonly SqlServerDialect Dialect = new();
-    private static readonly SqlServerBulkWriter BulkWriter = new(Dialect);
+    public static SqlServerDialect Dialect = new();
+    public static SqlServerBulkWriter BulkWriter = new(Dialect);
     public static Task BulkCopyAsync<T>(this SqlConnection connection,
         IEnumerable<T> items,
         string tableName = default,

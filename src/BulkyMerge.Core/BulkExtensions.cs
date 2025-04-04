@@ -8,7 +8,7 @@ using System.Collections.Concurrent;
 
 namespace BulkyMerge;
 
-public static partial class BulkExtensions
+public static class BulkExtensions
 {
     public const int DefaultBatchSize = 1000;
     private readonly static ConcurrentDictionary<string, List<ColumnInfo>> ColumnsCache = new();

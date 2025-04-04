@@ -8,7 +8,7 @@ using Npgsql;
 
 namespace BulkyMerge.PostgreSql;
 
-internal sealed class NpgsqlBulkWriter : IBulkWriter
+public sealed class NpgsqlBulkWriter : IBulkWriter
 {
 
     private readonly ConcurrentDictionary<Type, Type> TypesCache = new();

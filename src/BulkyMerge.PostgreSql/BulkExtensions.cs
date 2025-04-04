@@ -5,10 +5,10 @@ using Npgsql;
 
 namespace BulkyMerge.PostgreSql;
 
-public static partial class NpgsqlBulkExtensions
+public static class NpgsqlBulkExtensions
 {
-    private static readonly NpgsqlDialect Dialect = new();
-    private static readonly NpgsqlBulkWriter BulkWriter = new();
+    public static NpgsqlDialect Dialect = new();
+    public static NpgsqlBulkWriter BulkWriter = new();
     public static Task BulkCopyAsync<T>(this NpgsqlConnection connection,
         IEnumerable<T> items,
         string tableName = default,

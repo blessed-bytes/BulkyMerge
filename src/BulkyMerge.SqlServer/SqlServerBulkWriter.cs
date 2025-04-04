@@ -1,12 +1,8 @@
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
-using BulkyMerge;
 
 namespace BulkyMerge.SqlServer;
 
-
-internal class SqlServerBulkWriter : IBulkWriter
+public sealed class SqlServerBulkWriter : IBulkWriter
 {
     private readonly ISqlDialect _dialect;
 

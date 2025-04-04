@@ -2,10 +2,10 @@ using MySqlConnector;
 
 namespace BulkyMerge.MySql;
 
-public static partial class MySqlBulkExtensions
+public static class MySqlBulkExtensions
 {
-    private static readonly MySqlDialect Dialect = new();
-    private static readonly MySqlBulkWriter BulkWriter = new(Dialect);
+    private static MySqlDialect Dialect = new();
+    private static MySqlBulkWriter BulkWriter = new(Dialect);
 
     public static Task BulkCopyAsync<T>(this MySqlConnection connection,
         IEnumerable<T> items,
