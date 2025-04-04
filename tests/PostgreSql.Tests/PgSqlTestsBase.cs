@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using BulkyMerge.Root;
+using BulkyMerge;
 using Dapper;
 using Npgsql;
 

@@ -1,48 +1,11 @@
-﻿using System;
+﻿using BulkyMerge;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Data;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace BulkyMerge.Root
+namespace BulkyMerge
 {
-    public interface ITypeConverter
-    {
-        object Convert(object value);
-    }
-
-    public class DynamicTypeConvert : ITypeConverter
-    {
-        private readonly Func<object, object> _callback;
-        public DynamicTypeConvert(Func<object, object> callback)
-        {
-            _callback = callback;
-        }
-
-        public object Convert(object value)
-        {
-            return _callback(value);
-        }
-    }
-
-    public static class TypeConverters
-    {
-        private static readonly ConcurrentDictionary<Type, ITypeConverter> converters = new();
-        public static void RegisterTypeConverter(Type type, ITypeConverter converter)
-        {
-            converters[type] = converter;
-        }
-        public static void RegisterTypeConverter(Type type, Func<object, object> func)
-        {
-            converters[type] = new DynamicTypeConvert(func);
-        }
-
-        internal static ITypeConverter GetConverter(Type type) => converters.TryGetValue(type, out var converter) ? converter : null;
-    }
-
-
     public class DataReader<T> : IDataReader
     {
         private readonly IEnumerator<T> _enumerator;

@@ -1,5 +1,5 @@
 using BulkyMerge.PostgreSql;
-using BulkyMerge.Root;
+using BulkyMerge;
 using Dapper;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Newtonsoft.Json;

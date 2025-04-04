@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+	<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+	<RepositoryUrl>https://github.com/phil-kk/BulkyMerge</RepositoryUrl>
+	<Description>Extra Fast bulk Insert / Update / InserOrUpdate / Delete operations for SqlServer, PostgreSQL and MySQL also supports custom converters - TypeConverters.RegisterTypeConverter(typeof(JsonObj), (obj) =&gt; JsonConvert.SerializeObject(obj)); Benchmarks - https://dotnetfiddle.net/mB4h64</Description>
+	<PackageTags>entity framework bulk; dapper; mysql; merge; dapper bulk; bulkcopy; bulkmerge; insertorupdate; bulkdelete; bulkmerge; bulkinsert; dapper bulk</PackageTags>
+
+	<PackageVersion>1.1.0</PackageVersion>
+	<Title>BulkyMerge.MySql</Title>
+	<PackageProjectUrl>https://github.com/phil-kk/BulkyMerge</PackageProjectUrl>
+	<PackageLicenseUrl>https://licenses.nuget.org/Apache-2.0</PackageLicenseUrl>
+	<license>https://licenses.nuget.org/Apache-2.0</license>
+	<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+	<Authors>Phil Kleymenov</Authors>
+	<PackageId>BulkyMerge.MySql</PackageId>
+  </PropertyGroup>
+	
+	<ItemGroup>
+		<PackageReference Include="MySqlConnector" Version="2.4.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\BulkyMerge.Core\BulkyMerge.Core.csproj" PrivateAssets="all" ExcludeAssets="runtime" />
+	</ItemGroup>
+
+	<Target Name="IncludeBulkyMergeCore" AfterTargets="Build">
+		<ItemGroup>
+			<None Include="..\BulkyMerge.Core\bin\$(Configuration)\net9.0\BulkyMerge.Core.dll" Pack="true" PackagePath="lib/net9.0/" />
+		</ItemGroup>
+	</Target>
+
+</Project>

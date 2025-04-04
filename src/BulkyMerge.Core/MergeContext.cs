@@ -1,10 +1,9 @@
-﻿using System.Collections.Generic;
-using System.Data.Common;
+﻿using System.Data.Common;
 using System.Reflection;
 
-namespace BulkyMerge.Root;
+namespace BulkyMerge;
 
-internal record MergeContext<T>(
+public record MergeContext<T>(
         DbConnection Connection,
         DbTransaction Transaction,
         IEnumerable<T> Items,

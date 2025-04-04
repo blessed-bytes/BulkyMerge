@@ -1,6 +1,6 @@
 using System.Linq;
 using System.Threading.Tasks;
-using BulkyMerge.Root;
+using BulkyMerge;
 using MySqlConnector;
 
 namespace BulkyMerge.MySql;

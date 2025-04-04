@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
-using BulkyMerge.Root;
+using BulkyMerge;
 using Npgsql;
 
 namespace BulkyMerge.PostgreSql;

@@ -14,7 +14,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\BulkyMerge\BulkyMerge.csproj" />
+    <ProjectReference Include="..\..\src\BulkyMerge.Core\BulkyMerge.Core.csproj" />
+    <ProjectReference Include="..\..\src\BulkyMerge.MySql\BulkyMerge.MySql.csproj" />
+    <ProjectReference Include="..\..\src\BulkyMerge.PostgreSql\BulkyMerge.PostgreSql.csproj" />
+    <ProjectReference Include="..\..\src\BulkyMerge.SqlServer\BulkyMerge.SqlServer.csproj" />
   </ItemGroup>
 
 </Project>

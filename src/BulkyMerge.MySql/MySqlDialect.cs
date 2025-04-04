@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Text;
-using BulkyMerge.Root;
+using BulkyMerge;
 using MySqlConnector;
 
 namespace BulkyMerge.MySql;

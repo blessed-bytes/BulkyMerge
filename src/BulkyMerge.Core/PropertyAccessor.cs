@@ -5,7 +5,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace BulkyMerge.Root
+namespace BulkyMerge
 {
     public static class PropertyAccessors
     {

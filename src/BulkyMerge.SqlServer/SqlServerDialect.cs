@@ -1,4 +1,4 @@
-using BulkyMerge.Root;
+using BulkyMerge;
 using Microsoft.Data.SqlClient;
 using System.Collections.Generic;
 using System.Data;

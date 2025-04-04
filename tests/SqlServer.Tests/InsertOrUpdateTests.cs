@@ -1,4 +1,4 @@
-using BulkyMerge.Root;
+using BulkyMerge;
 using Dapper;
 using Microsoft.Data.SqlClient;
 

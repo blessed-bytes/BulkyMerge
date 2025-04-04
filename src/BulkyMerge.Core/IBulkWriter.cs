@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
-namespace BulkyMerge.Root;
+namespace BulkyMerge;
 
-internal interface IBulkWriter
+public interface IBulkWriter
 {
     void Write<T>(string destination, MergeContext<T> context);
     Task WriteAsync<T>(string destination, MergeContext<T> context);
