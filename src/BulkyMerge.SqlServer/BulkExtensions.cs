@@ -44,7 +44,7 @@ public static class SqlServerBulkExtensions
          string[] excludeProperties = default,
          IEnumerable<string> primaryKeys = default,
          int timeout = int.MaxValue,
-         bool mapOutputIdentity = true)
+         bool mapOutputIdentity = false)
      => BulkExtensions.BulkInsertAsync(BulkWriter, 
          Dialect, 
          connection, 

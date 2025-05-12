@@ -129,7 +129,7 @@ public static class BulkExtensions
 
         if (!mapIdentity || context.Identity is null)
         {
-            await ExecuteAsync(connection, merge, transaction);
+            await ExecuteAsync(connection, merge, transaction, context.Timeout);
             if (shouldCloseConnection) await connection.CloseAsync();
             return;
         }
@@ -194,7 +194,8 @@ public static class BulkExtensions
         ColumnInfo identity, 
         string tableName, 
         string tempTableName, 
-        IEnumerable<string> columnNames = default)
+        IEnumerable<string> columnNames = default,
+        int timeout = int.MaxValue)
     {
         var queryString = new StringBuilder(dialect.GetCreateTempTableQuery(tempTableName, tableName, columnNames));
         if (identity is not null)
@@ -202,13 +203,13 @@ public static class BulkExtensions
             queryString.AppendLine(dialect.GetAlterIdentityColumnQuery(tempTableName, identity));
         }
 
-        return ExecuteAsync(connection, queryString.ToString(), transaction);
+        return ExecuteAsync(connection, queryString.ToString(), transaction, timeout);
     }
 
-    private static async Task<List<ColumnInfo>> FindColumnsAsync(ISqlDialect dialect, DbConnection connection, DbTransaction transaction, string tableName)
+    private static async Task<List<ColumnInfo>> FindColumnsAsync(ISqlDialect dialect, DbConnection connection, DbTransaction transaction, string tableName, int timeout = int.MaxValue)
     {
         var result = new List<ColumnInfo>();
-        await using var reader = await ExecuteReaderAsync(connection, dialect.GetColumnsQuery(connection.Database, tableName), transaction);
+        await using var reader = await ExecuteReaderAsync(connection, dialect.GetColumnsQuery(connection.Database, tableName), transaction, timeout);
         while (await reader.ReadAsync())
         {
             result.Add(new ColumnInfo(reader.GetString(0), reader.GetString(1), reader.GetInt32(2) == 1, reader.GetInt32(3) == 1));
@@ -223,19 +224,21 @@ public static class BulkExtensions
         return true;
     }
     
-    private static async Task ExecuteAsync(DbConnection connection, string sql, DbTransaction transaction)
+    private static async Task ExecuteAsync(DbConnection connection, string sql, DbTransaction transaction, int timeout = int.MaxValue)
     {
         var command = connection.CreateCommand();
         command.CommandText = sql;
         command.Transaction = transaction;
+        command.CommandTimeout = timeout;
         await command.ExecuteNonQueryAsync();
     }
     
-    private static async Task<DbDataReader> ExecuteReaderAsync(DbConnection connection, string sql, DbTransaction transaction)
+    private static async Task<DbDataReader> ExecuteReaderAsync(DbConnection connection, string sql, DbTransaction transaction, int timeout = int.MaxValue)
     {
         var command = connection.CreateCommand();
         command.CommandText = sql;
         command.Transaction = transaction;
+        command.CommandTimeout = timeout;
         return await command.ExecuteReaderAsync();
     }
 

@@ -1,19 +1,9 @@
-using System.Linq;
-using System.Threading.Tasks;
-using BulkyMerge;
 using MySqlConnector;
 
 namespace BulkyMerge.MySql;
 
 internal sealed class MySqlBulkWriter : IBulkWriter
 {
-    private readonly ISqlDialect _dialect;
-
-    public MySqlBulkWriter(ISqlDialect dialect)
-    {
-        _dialect = dialect;
-    }
-    
     private async Task SetLoadInFileAsync(MySqlConnection connection)
     {
         await using var cmd = connection.CreateCommand();

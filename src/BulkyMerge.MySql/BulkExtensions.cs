@@ -5,7 +5,7 @@ namespace BulkyMerge.MySql;
 public static class MySqlBulkExtensions
 {
     private static MySqlDialect Dialect = new();
-    private static MySqlBulkWriter BulkWriter = new(Dialect);
+    private static MySqlBulkWriter BulkWriter = new();
 
     public static Task BulkCopyAsync<T>(this MySqlConnection connection,
         IEnumerable<T> items,
