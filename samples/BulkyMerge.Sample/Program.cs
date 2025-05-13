@@ -9,70 +9,83 @@ using Microsoft.Data.SqlClient;
 using MySqlConnector;
 using BulkyMerge.MySql;
 using BulkyMerge;
+using System.ComponentModel.DataAnnotations;
 const string pgsqlConnectionString = "Host=localhost;Port=5432;Database=postgres;Username=postgres;Password=YourPassword;";
 const string sqlServerConnectionString = "Server=localhost,1433;Database=master;User Id=sa;Password=YourStrong!Passw0rd;TrustServerCertificate=True;";
 const string mysqlConnectionString = "Server=localhost;Database=test;Uid=root;Pwd=YourPassword;Port=3306;AllowLoadLocalInfile=true;Allow User Variables=true";
 
-await CreateMysqlTable();
-await CreateSqlServerTable();
+//await CreateMysqlTable();
+//await CreateSqlServerTable();
 await CreatePgTable();
 
-TypeConverters.RegisterTypeConverter(typeof(JsonObj), JsonConvert.SerializeObject);
-
-var list = Enumerable.Range(0, 1000).Select(x => CreateOrUpdatePerson(x)).ToList();
-
-
-var stopWatch = Stopwatch.StartNew();
-await using var mysqlInsertConnection = MysqlConnect(); 
-await mysqlInsertConnection.BulkInsertAsync(list);
-Console.WriteLine($"Mysql.BulkInsertAsync {list.Count} takes {stopWatch.Elapsed}");
-
-stopWatch.Restart();
+//TypeConverters.RegisterTypeConverter(typeof(JsonObj), JsonConvert.SerializeObject);
+var list = Enumerable.Range(0, 1_000_000).Select(x => CreateOrUpdatePerson(x)).ToList();
 await using var postgreInsertConnection = PostgreConnect();
+var stopWatch = Stopwatch.StartNew();
 await postgreInsertConnection.BulkInsertAsync(list);
 Console.WriteLine($"PostgreSQL.BulkInsertAsync {list.Count} takes {stopWatch.Elapsed}");
+;
+//var stopWatch = Stopwatch.StartNew();
+//await using var mysqlInsertConnection = MysqlConnect(); 
+//await mysqlInsertConnection.BulkInsertAsync(list);
+//Console.WriteLine($"Mysql.BulkInsertAsync {list.Count} takes {stopWatch.Elapsed}");
 
-stopWatch.Restart();
-await using var sqlServerInsertConnection = SqlServerConnect();
-await sqlServerInsertConnection.BulkInsertAsync(list);
-Console.WriteLine($"SqlServer.BulkInsertAsync {list.Count} takes {stopWatch.Elapsed}");
+//stopWatch.Restart();
+//await using var postgreInsertConnection = PostgreConnect();
+//await postgreInsertConnection.BulkInsertAsync(list);
+//Console.WriteLine($"PostgreSQL.BulkInsertAsync {list.Count} takes {stopWatch.Elapsed}");
 
-var updated = list.Select(x => CreateOrUpdatePerson(0, x)).ToList();
+//stopWatch.Restart();
+//await using var sqlServerInsertConnection = SqlServerConnect();
+//await sqlServerInsertConnection.BulkInsertAsync(list);
+//Console.WriteLine($"SqlServer.BulkInsertAsync {list.Count} takes {stopWatch.Elapsed}");
 
-stopWatch.Restart();
-await using var mysqlInsertOrUpdateConnection = MysqlConnect(); 
-await mysqlInsertOrUpdateConnection.BulkInsertOrUpdateAsync(updated);
-Console.WriteLine($"Mysql.BulkInsertOrUpdateAsync {list.Count} takes {stopWatch.Elapsed}");
+//var updated = list.Select(x => CreateOrUpdatePerson(0, x)).ToList();
 
-stopWatch.Restart();
-await using var postgreInsertOrUpdateConnection = PostgreConnect(); 
-await postgreInsertOrUpdateConnection.BulkInsertOrUpdateAsync(updated);
-Console.WriteLine($"PostgreSQL.BulkInsertOrUpdateAsync {list.Count} takes {stopWatch.Elapsed}");
+//stopWatch.Restart();
+//await using var mysqlInsertOrUpdateConnection = MysqlConnect(); 
+//await mysqlInsertOrUpdateConnection.BulkInsertOrUpdateAsync(updated);
+//Console.WriteLine($"Mysql.BulkInsertOrUpdateAsync {list.Count} takes {stopWatch.Elapsed}");
 
-stopWatch.Restart();
-await using var sqlServerInsertOrUpdateConnection = SqlServerConnect(); 
-await sqlServerInsertOrUpdateConnection.BulkInsertOrUpdateAsync(updated);
-Console.WriteLine($"SqlServer.BulkInsertOrUpdateAsync {list.Count} takes {stopWatch.Elapsed}");
+//stopWatch.Restart();
+//await using var postgreInsertOrUpdateConnection = PostgreConnect(); 
+//await postgreInsertOrUpdateConnection.BulkInsertOrUpdateAsync(updated);
+//Console.WriteLine($"PostgreSQL.BulkInsertOrUpdateAsync {list.Count} takes {stopWatch.Elapsed}");
 
-stopWatch.Restart();
-await using var mysqlDeleteConnection = MysqlConnect(); 
-await mysqlDeleteConnection.BulkDeleteAsync(list);
-Console.WriteLine($"Mysql.BulkDeleteAsync {list.Count} takes {stopWatch.Elapsed}");
+//stopWatch.Restart();
+//await using var sqlServerInsertOrUpdateConnection = SqlServerConnect(); 
+//await sqlServerInsertOrUpdateConnection.BulkInsertOrUpdateAsync(updated);
+//Console.WriteLine($"SqlServer.BulkInsertOrUpdateAsync {list.Count} takes {stopWatch.Elapsed}");
 
-stopWatch.Restart();
-await using var postgreDeleteConnection = PostgreConnect(); 
-await postgreDeleteConnection.BulkDeleteAsync(list);
-Console.WriteLine($"PostgreSQL.BulkDeleteAsync {list.Count} takes {stopWatch.Elapsed}");
+//stopWatch.Restart();
+//await using var mysqlDeleteConnection = MysqlConnect(); 
+//await mysqlDeleteConnection.BulkDeleteAsync(list);
+//Console.WriteLine($"Mysql.BulkDeleteAsync {list.Count} takes {stopWatch.Elapsed}");
 
-stopWatch.Restart();
-await using var sqlServerDeleteConnection = SqlServerConnect(); 
-await sqlServerDeleteConnection.BulkDeleteAsync(list);
-Console.WriteLine($"SqlServer.BulkDeleteAsync {list.Count} takes {stopWatch.Elapsed}");
+//stopWatch.Restart();
+//await using var postgreDeleteConnection = PostgreConnect(); 
+//await postgreDeleteConnection.BulkDeleteAsync(list);
+//Console.WriteLine($"PostgreSQL.BulkDeleteAsync {list.Count} takes {stopWatch.Elapsed}");
+
+//stopWatch.Restart();
+//await using var sqlServerDeleteConnection = SqlServerConnect(); 
+//await sqlServerDeleteConnection.BulkDeleteAsync(list);
+//Console.WriteLine($"SqlServer.BulkDeleteAsync {list.Count} takes {stopWatch.Elapsed}");
 
 ;
-Person CreateOrUpdatePerson(int i, Person p = null)
+ForecastAlarm CreateOrUpdatePerson(int i)
 {
-    var randString = Guid.NewGuid().ToString("N");
+    return new ForecastAlarm
+    {
+        Date = DateTime.Now.AddMinutes(i),
+        Variable = Guid.NewGuid().ToString("N"),
+        Alarm = i,
+        ConfigAlarm = i,
+        ForecastValue = i,
+        HistoricalValue = i,
+        SelfNormAlarm = i
+    };
+    /*var randString = Guid.NewGuid().ToString("N");
     p ??= new Person();
     p.FullName = randString;
     p.JsonObj = new JsonObj {  JsonProp = randString };
@@ -83,7 +96,7 @@ Person CreateOrUpdatePerson(int i, Person p = null)
     p.BigIntValue = i;
     p.IntValue = i;
     p.DecimalValue = i;
-    return p;
+    return p;*/
 }
 
 SqlConnection SqlServerConnect() => new SqlConnection(sqlServerConnectionString);
@@ -147,27 +160,33 @@ async Task CreatePgTable()
     await using var createNpgSql = new NpgsqlConnection(pgsqlConnectionString);
     {
         createNpgSql.Execute($@"
-            DROP TABLE IF EXISTS ""Person"";
-            CREATE TABLE ""Person""
-            (
-                ""IdentityId"" SERIAL PRIMARY KEY,
-                ""IntValue"" integer NULL,
-                ""BigIntValue"" bigint NULL,
-                ""DecimalValue"" decimal(10, 4) NULL,
-                ""NvarcharValue"" varchar(255) NULL,
-                ""FullName"" varchar(255) NULL,
-                ""JsonObj"" JSONB NULL,
-                ""EnumValue"" integer NULL,
-                ""BigTextValue"" TEXT NULL,
-                ""CreateDate"" date NULL,
-                ""GuidValue"" uuid NULL
-            )");
+            DROP TABLE IF EXISTS ""ForecastAlarm"";
+            CREATE TABLE IF NOT EXISTS ""ForecastAlarm""
+(
+    ""Date"" timestamp NOT NULL,
+    ""Variable"" varchar(255) NOT NULL,
+    ""HistoricalValue"" double precision  NOT NULL,
+    ""ForecastValue"" double precision  NOT NULL,
+    ""Alarm"" double precision  NOT NULL,
+    ""SelfNormAlarm"" double precision  NOT NULL,
+    ""ConfigAlarm"" double precision  NOT NULL,
+    PRIMARY KEY (""Date"", ""Variable"")
+)");
 
     }
 
 }
 
-
+public record ForecastAlarm 
+{ 
+    [Key] public DateTime Date { get; set; } 
+    [Key] public string Variable { get; set; } 
+    public double HistoricalValue { get; set; } 
+    public double ForecastValue { get; set; } 
+    public double Alarm { get; set; }
+    public double SelfNormAlarm { get; set; } 
+    public double ConfigAlarm { get; set; } 
+}
 public class Person
 {
     public int IdentityId { get; set; }

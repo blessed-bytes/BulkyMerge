@@ -64,7 +64,7 @@ public static class BulkExtensions
         IEnumerable<T> items,
         string tableName = default,
         IEnumerable<string> excludeColumns = default,
-        int timeout = int.MaxValue,
+        int timeout = 1000,
         int batchSize = DefaultBatchSize)
     {
         var shouldCloseConnection =  await OpenConnectionAsync(connection);
@@ -88,7 +88,7 @@ public static class BulkExtensions
             int batchSize = DefaultBatchSize,
             IEnumerable<string> excludeProperties = default,
             IEnumerable<string> primaryKeys = default,
-            int timeout = int.MaxValue,
+            int timeout = 1000,
             bool mapIdentity = true)
     => ExecuteInternalAsync(
             (dialect, context) => dialect.GetInsertOrUpdateMergeStatement(context.ColumnsToProperty.Keys, context.TableName, context.TempTableName, context.PrimaryKeys, context.Identity),
@@ -105,7 +105,7 @@ public static class BulkExtensions
             int batchSize = DefaultBatchSize,
             IEnumerable<string> excludeProperties = default,
             IEnumerable<string> primaryKeys = default,
-            int timeout = int.MaxValue,
+            int timeout = 1000,
             bool mapIdentity = true)
     {
         var shouldCloseConnection = await OpenConnectionAsync(connection);
@@ -158,7 +158,7 @@ public static class BulkExtensions
          int batchSize = DefaultBatchSize,
          string[] excludeProperties = default,
          IEnumerable<string> primaryKeys = default,
-         int timeout = int.MaxValue,
+         int timeout = 1000,
          bool mapIdentity = true)
      => ExecuteInternalAsync(
             (dialect, context) => dialect.GetInsertQuery(context.ColumnsToProperty.Keys, context.TableName, context.TempTableName, context.PrimaryKeys, context.Identity),
@@ -171,7 +171,7 @@ public static class BulkExtensions
          int batchSize = DefaultBatchSize,
          string[] excludeProperties = default,
          IEnumerable<string> primaryKeys = default,
-         int timeout = int.MaxValue)
+         int timeout = 1000)
      => ExecuteInternalAsync(
             (dialect, context) => dialect.GetUpdateQuery(context.ColumnsToProperty.Keys, context.TableName, context.TempTableName, context.PrimaryKeys, context.Identity),
             bulkWriter, dialect, connection, items, tableName, transaction, batchSize, excludeProperties, primaryKeys, timeout, false);
@@ -184,7 +184,7 @@ public static class BulkExtensions
          DbTransaction transaction = default,
          int batchSize = DefaultBatchSize,
          IEnumerable<string> primaryKeys = default,
-         int timeout = int.MaxValue)
+         int timeout = 1000)
      => ExecuteInternalAsync(
             (dialect, context) => dialect.GetDeleteQuery(context.TableName, context.TempTableName, context.PrimaryKeys, context.Identity),
             bulkWriter, dialect, connection, items, tableName, transaction, batchSize, null, primaryKeys, timeout, false);
@@ -195,7 +195,7 @@ public static class BulkExtensions
         string tableName, 
         string tempTableName, 
         IEnumerable<string> columnNames = default,
-        int timeout = int.MaxValue)
+        int timeout = 1000)
     {
         var queryString = new StringBuilder(dialect.GetCreateTempTableQuery(tempTableName, tableName, columnNames));
         if (identity is not null)
@@ -206,7 +206,7 @@ public static class BulkExtensions
         return ExecuteAsync(connection, queryString.ToString(), transaction, timeout);
     }
 
-    private static async Task<List<ColumnInfo>> FindColumnsAsync(ISqlDialect dialect, DbConnection connection, DbTransaction transaction, string tableName, int timeout = int.MaxValue)
+    private static async Task<List<ColumnInfo>> FindColumnsAsync(ISqlDialect dialect, DbConnection connection, DbTransaction transaction, string tableName, int timeout = 1000)
     {
         var result = new List<ColumnInfo>();
         await using var reader = await ExecuteReaderAsync(connection, dialect.GetColumnsQuery(connection.Database, tableName), transaction, timeout);
@@ -224,7 +224,7 @@ public static class BulkExtensions
         return true;
     }
     
-    private static async Task ExecuteAsync(DbConnection connection, string sql, DbTransaction transaction, int timeout = int.MaxValue)
+    private static async Task ExecuteAsync(DbConnection connection, string sql, DbTransaction transaction, int timeout = 1000)
     {
         var command = connection.CreateCommand();
         command.CommandText = sql;
@@ -233,7 +233,7 @@ public static class BulkExtensions
         await command.ExecuteNonQueryAsync();
     }
     
-    private static async Task<DbDataReader> ExecuteReaderAsync(DbConnection connection, string sql, DbTransaction transaction, int timeout = int.MaxValue)
+    private static async Task<DbDataReader> ExecuteReaderAsync(DbConnection connection, string sql, DbTransaction transaction, int timeout = 1000)
     {
         var command = connection.CreateCommand();
         command.CommandText = sql;
@@ -266,7 +266,7 @@ public static class BulkExtensions
         IEnumerable<T> items,
         string tableName = default,
         IEnumerable<string> excludeColumns = default,
-        int timeout = int.MaxValue,
+        int timeout = 1000,
         int batchSize = DefaultBatchSize)
     => BulkCopyAsync(bulkWriter, connection, transaction, items, tableName, excludeColumns, timeout, batchSize).GetAwaiter().GetResult();
 
@@ -277,7 +277,7 @@ public static class BulkExtensions
             int batchSize = DefaultBatchSize,
             IEnumerable<string> excludeProperties = default,
             IEnumerable<string> primaryKeys = default,
-            int timeout = int.MaxValue,
+            int timeout = 1000,
             bool mapOutputIdentity = true)
     => BulkInsertOrUpdateAsync(bulkWriter, dialect, connection, items, tableName, transaction, batchSize, excludeProperties, primaryKeys, timeout, mapOutputIdentity).GetAwaiter().GetResult();
 
@@ -289,7 +289,7 @@ public static class BulkExtensions
          int batchSize = DefaultBatchSize,
          string[] excludeProperties = default,
          IEnumerable<string> primaryKeys = default,
-         int timeout = int.MaxValue, bool mapOutputIdentity = true)
+         int timeout = 1000, bool mapOutputIdentity = true)
     => BulkInsertAsync(bulkWriter, dialect, connection, items, tableName, transaction, batchSize, excludeProperties, primaryKeys, timeout, mapOutputIdentity).GetAwaiter().GetResult();
 
     public static void BulkUpdate<T>(IBulkWriter bulkWriter, ISqlDialect dialect, DbConnection connection,
@@ -299,7 +299,7 @@ public static class BulkExtensions
          int batchSize = DefaultBatchSize,
          string[] excludeProperties = default,
          IEnumerable<string> primaryKeys = default,
-         int timeout = int.MaxValue)
+         int timeout = 1000)
      => BulkUpdateAsync(bulkWriter, dialect, connection, items, tableName, transaction, batchSize, excludeProperties, primaryKeys, timeout).GetAwaiter().GetResult();
 
     public static void BulkDelete<T>(IBulkWriter bulkWriter, ISqlDialect dialect, DbConnection connection,
@@ -308,7 +308,7 @@ public static class BulkExtensions
          DbTransaction transaction = default,
          int batchSize = DefaultBatchSize,
          IEnumerable<string> primaryKeys = default,
-         int timeout = int.MaxValue)
+         int timeout = 1000)
      => BulkDeleteAsync(bulkWriter, dialect, connection, items, tableName, transaction, batchSize, primaryKeys, timeout).GetAwaiter().GetResult();
 
 }

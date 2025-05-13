@@ -7,7 +7,7 @@ public class MergeOptions
     public int BatchSize { get; set; } = BulkExtensions.DefaultBatchSize;
     public IEnumerable<string> ExcludeProperties { get; set; }
     public IEnumerable<string> PrimaryKeys { get; set; }
-    public int Timeout { get; set; } = int.MaxValue;
+    public int Timeout { get; set; } = 1000;
     public string IdentityColumnName { get; set; }
     public bool MapOutputIdentity { get; set; }
 }

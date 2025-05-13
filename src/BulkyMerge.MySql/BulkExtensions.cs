@@ -12,7 +12,7 @@ public static class MySqlBulkExtensions
         string tableName = default,
         MySqlTransaction transaction = default,
         IEnumerable<string> excludeColumns = default,
-        int timeout = int.MaxValue,
+        int timeout = 1000,
         int batchSize = BulkExtensions.DefaultBatchSize)
     => BulkExtensions.BulkCopyAsync(BulkWriter, connection, transaction, items, tableName, excludeColumns, timeout, batchSize);
 
@@ -23,7 +23,7 @@ public static class MySqlBulkExtensions
         int batchSize = BulkExtensions.DefaultBatchSize,
         IEnumerable<string> excludeProperties = default,
         IEnumerable<string> primaryKeys = default,
-        int timeout = int.MaxValue,
+        int timeout = 1000,
         bool mapOutputIdentity = true)
         => BulkExtensions.BulkInsertOrUpdateAsync(BulkWriter, 
             Dialect, 
@@ -44,7 +44,7 @@ public static class MySqlBulkExtensions
          int batchSize =  BulkExtensions.DefaultBatchSize,
          string[] excludeProperties = default,
          IEnumerable<string> primaryKeys = default,
-         int timeout = int.MaxValue,
+         int timeout = 1000,
          bool mapOutputIdentity = true)
      => BulkExtensions.BulkInsertAsync(BulkWriter, 
          Dialect, 
@@ -65,7 +65,7 @@ public static class MySqlBulkExtensions
          int batchSize = BulkExtensions.DefaultBatchSize,
          string[] excludeProperties = default,
          IEnumerable<string> primaryKeys = default,
-         int timeout = int.MaxValue)
+         int timeout = 1000)
      => BulkExtensions.BulkUpdateAsync(BulkWriter, 
          Dialect, 
          connection, 
@@ -82,9 +82,9 @@ public static class MySqlBulkExtensions
          string tableName = default,
          MySqlTransaction transaction = default,
          int batchSize = BulkExtensions.DefaultBatchSize,
-         int bulkCopyTimeout = int.MaxValue,
+         int bulkCopyTimeout = 1000,
          IEnumerable<string> primaryKeys = default,
-         int timeout = int.MaxValue)
+         int timeout = 1000)
          => BulkExtensions.BulkDeleteAsync(BulkWriter, 
              Dialect, 
              connection, 
@@ -100,7 +100,7 @@ public static class MySqlBulkExtensions
         string tableName = default,
         MySqlTransaction transaction = default,
         IEnumerable<string> excludeColumns = default,
-        int timeout = int.MaxValue,
+        int timeout = 1000,
         int batchSize = BulkExtensions.DefaultBatchSize)
     => BulkExtensions.BulkCopy(BulkWriter, connection, transaction, items, tableName, excludeColumns, timeout, batchSize);
 
@@ -111,7 +111,7 @@ public static class MySqlBulkExtensions
            int batchSize = BulkExtensions.DefaultBatchSize,
            IEnumerable<string> excludeProperties = default,
            IEnumerable<string> primaryKeys = default,
-           int timeout = int.MaxValue,
+           int timeout = 1000,
            bool mapOutputIdentity = true)
     => BulkExtensions.BulkInsertOrUpdate(BulkWriter,
         Dialect,
@@ -132,7 +132,7 @@ public static class MySqlBulkExtensions
         int batchSize = BulkExtensions.DefaultBatchSize,
         string[] excludeProperties = default,
         IEnumerable<string> primaryKeys = default,
-        int timeout = int.MaxValue,
+        int timeout = 1000,
         bool mapOutputIdentity = true)
     => BulkExtensions.BulkInsert(BulkWriter,
         Dialect,
@@ -153,7 +153,7 @@ public static class MySqlBulkExtensions
         int batchSize = BulkExtensions.DefaultBatchSize,
         string[] excludeProperties = default,
         IEnumerable<string> primaryKeys = default,
-        int timeout = int.MaxValue)
+        int timeout = 1000)
     => BulkExtensions.BulkUpdate(BulkWriter,
         Dialect,
         connection,
@@ -171,7 +171,7 @@ public static class MySqlBulkExtensions
         MySqlTransaction transaction = default,
         int batchSize = BulkExtensions.DefaultBatchSize,
         IEnumerable<string> primaryKeys = default,
-        int timeout = int.MaxValue)
+        int timeout = 1000)
     => BulkExtensions.BulkDelete(BulkWriter,
         Dialect,
         connection,
