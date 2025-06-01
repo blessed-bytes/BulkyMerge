@@ -94,11 +94,11 @@ namespace BulkyMerge.PostgreSql.Tests
                 await connection.OpenAsync();
                 if (sync)
                 {
-                    connection.BulkInsert(items, tableName);
+                    connection.BulkInsert(items, tableName, mapOutputIdentity: true);
                 }
                 else
                 {
-                    await connection.BulkInsertAsync(items, tableName);
+                    await connection.BulkInsertAsync(items, tableName, mapOutputIdentity: true);
                 }
                 var select = await connection.QueryAsync<AllFieldTypesWithIdentityTests>($"SELECT * FROM \"{tableName}\" ORDER BY \"Id\" ASC");
                 AllFieldsTestAssertions(select, items);

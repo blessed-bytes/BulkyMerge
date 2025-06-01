@@ -26,7 +26,7 @@ public static class NpgsqlBulkExtensions
         IEnumerable<string> excludeProperties = default,
         IEnumerable<string> primaryKeys = default,
         int timeout = 1000,
-        bool mapIdentity = true)
+        bool mapOutputIdentity = false)
         => BulkExtensions.BulkInsertOrUpdateAsync(BulkWriter, 
             Dialect, 
             connection, 
@@ -37,7 +37,7 @@ public static class NpgsqlBulkExtensions
             excludeProperties, 
             primaryKeys, 
             timeout,
-            mapIdentity);
+            mapOutputIdentity);
      
      public static Task BulkInsertAsync<T>(this NpgsqlConnection connection,
          IList<T> items,
@@ -47,7 +47,7 @@ public static class NpgsqlBulkExtensions
          string[] excludeProperties = default,
          IEnumerable<string> primaryKeys = default,
          int timeout = 1000,
-         bool mapIdentity = true)
+         bool mapOutputIdentity = false)
      => BulkExtensions.BulkInsertAsync(BulkWriter, 
          Dialect, 
          connection, 
@@ -58,7 +58,7 @@ public static class NpgsqlBulkExtensions
          excludeProperties, 
          primaryKeys, 
          timeout,
-         mapIdentity);
+         mapOutputIdentity);
      
      public static Task BulkUpdateAsync<T>(this NpgsqlConnection connection,
          IEnumerable<T> items,
@@ -113,7 +113,8 @@ public static class NpgsqlBulkExtensions
            int batchSize = BulkExtensions.DefaultBatchSize,
            IEnumerable<string> excludeProperties = default,
            IEnumerable<string> primaryKeys = default,
-           int timeout = 1000)
+           int timeout = 1000,
+           bool mapOutputIdentity = false)
     => BulkExtensions.BulkInsertOrUpdate(BulkWriter,
         Dialect,
         connection,
@@ -123,7 +124,8 @@ public static class NpgsqlBulkExtensions
         batchSize,
         excludeProperties,
         primaryKeys,
-        timeout);
+        timeout,
+        mapOutputIdentity);
 
     public static void BulkInsert<T>(this NpgsqlConnection connection,
         IList<T> items,
@@ -134,7 +136,7 @@ public static class NpgsqlBulkExtensions
         string[] excludeProperties = default,
         IEnumerable<string> primaryKeys = default,
         int timeout = 1000,
-        bool mapOutputIdentity = true)
+        bool mapOutputIdentity = false)
     => BulkExtensions.BulkInsert(BulkWriter,
         Dialect,
         connection,

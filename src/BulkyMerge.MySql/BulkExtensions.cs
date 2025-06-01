@@ -24,7 +24,7 @@ public static class MySqlBulkExtensions
         IEnumerable<string> excludeProperties = default,
         IEnumerable<string> primaryKeys = default,
         int timeout = 1000,
-        bool mapOutputIdentity = true)
+        bool mapOutputIdentity = false)
         => BulkExtensions.BulkInsertOrUpdateAsync(BulkWriter, 
             Dialect, 
             connection, 
@@ -45,7 +45,7 @@ public static class MySqlBulkExtensions
          string[] excludeProperties = default,
          IEnumerable<string> primaryKeys = default,
          int timeout = 1000,
-         bool mapOutputIdentity = true)
+         bool mapOutputIdentity = false)
      => BulkExtensions.BulkInsertAsync(BulkWriter, 
          Dialect, 
          connection, 
@@ -112,7 +112,7 @@ public static class MySqlBulkExtensions
            IEnumerable<string> excludeProperties = default,
            IEnumerable<string> primaryKeys = default,
            int timeout = 1000,
-           bool mapOutputIdentity = true)
+           bool mapOutputIdentity = false)
     => BulkExtensions.BulkInsertOrUpdate(BulkWriter,
         Dialect,
         connection,
@@ -133,7 +133,7 @@ public static class MySqlBulkExtensions
         string[] excludeProperties = default,
         IEnumerable<string> primaryKeys = default,
         int timeout = 1000,
-        bool mapOutputIdentity = true)
+        bool mapOutputIdentity = false)
     => BulkExtensions.BulkInsert(BulkWriter,
         Dialect,
         connection,
