@@ -19,7 +19,7 @@ await CreatePgTable();
 
 TypeConverters.RegisterTypeConverter(typeof(JsonObj), JsonConvert.SerializeObject);
 
-var list = Enumerable.Range(0, 1000).Select(x => CreateOrUpdatePerson(x)).ToList();
+var list = Enumerable.Range(0, 100_000).Select(x => CreateOrUpdatePerson(x)).ToList();
 
 
 var stopWatch = Stopwatch.StartNew();
