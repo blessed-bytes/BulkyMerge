@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>BulkyMerge</RootNamespace>
+    <AssemblyName>BulkyMerge.Abstractions</AssemblyName>
+    <Description>Shared contracts for BulkyMerge bulk database operations.</Description>
+    <PackageId>BulkyMerge.Abstractions</PackageId>
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
+</Project>

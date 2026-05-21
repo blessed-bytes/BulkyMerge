@@ -1,9 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>disable</Nullable>
+    <RootNamespace>BulkyMerge</RootNamespace>
+    <AssemblyName>BulkyMerge.Core</AssemblyName>
+    <Description>Core engine for BulkyMerge bulk database operations.</Description>
+    <PackageId>BulkyMerge.Core</PackageId>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
-
+  <ItemGroup>
+    <ProjectReference Include="..\BulkyMerge.Abstractions\BulkyMerge.Abstractions.csproj" />
+  </ItemGroup>
 </Project>
